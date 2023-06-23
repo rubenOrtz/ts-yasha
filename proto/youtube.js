@@ -1,12 +1,23 @@
+
 const {
-	playlist, playlist_params, playlist_offset,
-	search_sort, search_filters, search, search_continuation, search_options
+	// @ts-ignore
+	playlist, playlist_params, playlist_offset, search_sort, search_filters, search, search_continuation, search_options
 } = require('./build/youtube_pb');
 
+/**
+ * 
+ * @param {WithImplicitCoercion<ArrayBuffer | SharedArrayBuffer>} binary 
+ * @returns {string}
+ */
 function binary_to_b64_no_pad(binary){
 	return Buffer.from(binary).toString('base64url');
 }
 
+/**
+ * 
+ * @param {WithImplicitCoercion<ArrayBuffer | SharedArrayBuffer>} binary 
+ * @returns {string}
+ */
 function bin_b64(binary){
 	var str = binary_to_b64_no_pad(binary);
 
@@ -15,15 +26,30 @@ function bin_b64(binary){
 	return str;
 }
 
+/**
+ * 
+ * @param {WithImplicitCoercion<ArrayBuffer | SharedArrayBuffer>} binary 
+ * @returns {string}
+ */
 function binary_to_b64url(binary){
 	return encodeURIComponent(bin_b64(binary));
 }
 
+/**
+ * 
+ * @param {string} input 
+ * @returns {Buffer}
+ */
 function b64url_to_binary(input){
 	return Buffer.from(decodeURIComponent(input), 'base64');
 }
 
 module.exports = {
+	/**
+	 * 
+	 * @param {*} continuation 
+	 * @returns 
+	 */
 	playlist_next_offset(continuation){
 		var p = playlist.deserializeBinary(b64url_to_binary(continuation));
 		var cont = p.getContinuation();
@@ -45,6 +71,12 @@ module.exports = {
 		return p_offset.getOffset();
 	},
 
+	/**
+	 * 
+	 * @param {*} id 
+	 * @param {*} offset 
+	 * @returns {string}
+	 */
 	gen_playlist_continuation(id, offset){
 		var p_offset = new playlist_offset(), p_params = new playlist_params(),
 			p_cont = new playlist.playlist_continuation(), p = new playlist();
@@ -60,6 +92,13 @@ module.exports = {
 		return binary_to_b64url(p.serializeBinary());
 	},
 
+	/**
+	 * 
+	 * @param {*} query 
+	 * @param {*} offset 
+	 * @param {*} options 
+	 * @returns {string}
+	 */
 	gen_search_continuation(query, offset, options){
 		var s_cont = new search_continuation(),
 			s_data = new search_continuation.search_data(),
@@ -84,6 +123,11 @@ module.exports = {
 		return binary_to_b64url(s_cont.serializeBinary());
 	},
 
+	/**
+	 * 
+	 * @param {*} opts 
+	 * @returns {string}
+	 */
 	gen_search_options(opts){
 		var options = new search(),
 			filters = new search_filters();

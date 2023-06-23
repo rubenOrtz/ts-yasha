@@ -1,3 +1,4 @@
+// @ts-check
 module.exports = {
 	api: {
 		Youtube: require('./src/api/Youtube'),
