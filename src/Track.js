@@ -1,4 +1,24 @@
 class TrackStream{
+	/** @type {string} */
+	url
+	/** @type {boolean} */
+	video
+	/** @type {boolean} */
+	audio
+	/** @type {number} */
+	bitrate
+	/** @type {number} */
+	duration
+	/** @type {any | null} */
+	container
+	/** @type {any | null} */
+	codecs
+	
+
+	/**
+	 * 
+	 * @param {string} url 
+	 */
 	constructor(url){
 		this.url = url;
 		this.video = false;
@@ -9,6 +29,12 @@ class TrackStream{
 		this.codecs = null;
 	}
 
+	/**
+	 * 
+	 * @param {boolean} video 
+	 * @param {boolean} audio 
+	 * @returns {this}
+	 */
 	setTracks(video, audio){
 		this.video = video;
 		this.audio = audio;
@@ -16,18 +42,34 @@ class TrackStream{
 		return this;
 	}
 
+	/**
+	 * 
+	 * @param {number} bitrate 
+	 * @returns {this}
+	 */
 	setBitrate(bitrate){
 		this.bitrate = bitrate;
 
 		return this;
 	}
 
+	/**
+	 * 
+	 * @param {number} duration 
+	 * @returns {this}
+	 */
 	setDuration(duration){
 		this.duration = duration;
 
 		return this;
 	}
 
+	/**
+	 * 
+	 * @param {any} container 
+	 * @param {any} codecs 
+	 * @returns {this}
+	 */
 	setMetadata(container, codecs){
 		this.container = container;
 		this.codecs = codecs;
@@ -35,38 +77,90 @@ class TrackStream{
 		return this;
 	}
 
+	/**
+	 * 
+	 * @param {TrackStream} other 
+	 * @returns {boolean}
+	 */
 	equals(other){
 		return this == other;
 	}
 
+	/**
+	 * 
+	 * @returns {Promise<string | null>}
+	 */
 	async getUrl(){
 		return null;
 	}
 }
 
 class TrackStreams extends Array{
+	/**
+	 * 
+	 * @param {number} volume 
+	 * @param {any} live 
+	 * @param {number} time 
+	 */
 	set(volume, live, time){
 		this.volume = volume;
 		this.live = live;
 		this.time = time;
 	}
 
+	/**
+	 * 
+	 * @returns {boolean}
+	 */
 	expired(){
 		return false;
 	}
 
+	
+	/**
+	 * 
+	 * @returns {boolean}
+	 */
 	maybeExpired(){
 		return false;
 	}
 }
 
 class Track{
+	/** @type {string} */
+	platform
+	/** @type {boolean} */
+	playable
+	/** @type {number} */
+	duration
+	/** @type {unknown} */
+	streams
+	/** @type {string | undefined} */
+	author
+	/** @type {any | undefined} */
+	icons
+	/** @type {string | undefined} */
+	id
+	/** @type {string | undefined} */
+	title
+	/** @type {any | undefined} */
+	thumbnails
+	/**
+	 * 
+	 * @param {string} platform 
+	 */
 	constructor(platform){
 		this.platform = platform;
 		this.playable = true;
 		this.duration = -1;
 	}
 
+	/**
+	 * 
+	 * @param {string} name 
+	 * @param {*} icons 
+	 * @returns {this}
+	 */
 	setOwner(name, icons){
 		this.author = name;
 		this.icons = icons;
@@ -74,6 +168,14 @@ class Track{
 		return this;
 	}
 
+	/**
+	 * 
+	 * @param {string} id 
+	 * @param {string} title 
+	 * @param {number} duration 
+	 * @param {*} thumbnails 
+	 * @returns {this}
+	 */
 	setMetadata(id, title, duration, thumbnails){
 		this.id = id;
 		this.title = title;
@@ -83,42 +185,85 @@ class Track{
 		return this;
 	}
 
+	/**
+	 * 
+	 * @param {*} streams 
+	 * @returns {this}
+	 */
 	setStreams(streams){
 		this.streams = streams;
 
 		return this;
 	}
 
+	/**
+	 * 
+	 * @param {boolean} playable 
+	 * @returns {this}
+	 */
 	setPlayable(playable){
 		this.playable = playable;
 
 		return this;
 	}
 
+	/**
+	 * 
+	 * @returns {Promise<unknown>}
+	 */
 	async fetch(){
 		return null;
 	}
 
+	/**
+	 * 
+	 * @returns {Promise<unknown>}
+	 */
 	async getStreams(){
 		return null;
 	}
 
+	/**
+	 * @returns {string | null}
+	 */
 	get url(){
 		return null;
 	}
 
+	/**
+	 * 
+	 * @param {Track} other 
+	 * @returns {boolean}
+	 */
 	equals(other){
 		return this == other || (this.platform == other.platform && this.id != null && this.id == other.id);
 	}
 }
 
 class TrackResults extends Array{
+	/**
+	 * 
+	 * @returns {Promise<unknown | null>}
+	 */
 	async next(){
 		return null;
 	}
 }
 
 class TrackPlaylist extends TrackResults{
+	/** @type {string | undefined} */
+	title
+	/** @type {string | undefined} */
+	description
+	/** @type {Track | undefined} */
+	firstTrack
+
+	/**
+	 * 
+	 * @param {string} title 
+	 * @param {string} description 
+	 * @returns {this}
+	 */
 	setMetadata(title, description){
 		this.title = title;
 		this.description = description;
@@ -126,29 +271,42 @@ class TrackPlaylist extends TrackResults{
 		return this;
 	}
 
+	/**
+	 * 
+	 * @param {Track} track 
+	 * @returns {this}
+	 */
 	setFirstTrack(track){
 		this.firstTrack = track;
 
 		return this;
 	}
 
+	/**
+	 * 
+	 * @returns {Promise<unknown | null>}
+	 */
 	async next(){
 		return null;
 	}
 
+	/**
+	 * 
+	 * @returns {Promise<this>}
+	 */
 	async load(){
-		var result;
+		let result;
 
 		result = await this.next();
 
 		while(result && result.length){
 			this.push(...result);
-
+			// @ts-ignore
 			result = await result.next();
 		}
 
 		if(this.firstTrack){
-			var index = this.findIndex(track => track.equals(this.firstTrack));
+			const index = this.findIndex(track => track.equals(this.firstTrack));
 
 			if(index == -1)
 				this.unshift(this.firstTrack);
@@ -159,18 +317,37 @@ class TrackPlaylist extends TrackResults{
 		return this;
 	}
 
+	/** @returns {string | null} */
 	get url(){
 		return null;
 	}
 }
 
 class TrackImage{
+	/** @type {string} */
+	url
+	/** @type {number} */
+	width
+	/** @type {number} */
+	height
+
+	/**
+	 * 
+	 * @param {string} url 
+	 * @param {number} width 
+	 * @param {number} height 
+	 */
 	constructor(url, width, height){
 		this.url = url ?? null;
 		this.width = width ?? 0;
 		this.height = height ?? 0;
 	}
 
+	/**
+	 * 
+	 * @param {{url:string;width:number;height:number}[]} array 
+	 * @returns {TrackImage[]}
+	 */
 	static from(array){
 		if(!array)
 			return [];

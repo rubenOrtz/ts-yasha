@@ -17,10 +17,10 @@ export namespace api {
             expire: any;
             expired(): boolean;
             extract_streams(streams: any, adaptive: any): void;
-            set(volume: any, live: any, time: any): void;
-            volume: any;
+            set(volume: number, live: any, time: number): void;
+            volume: number | undefined;
             live: any;
-            time: any;
+            time: number | undefined;
             maybeExpired(): boolean;
             length: number;
             toString(): string;
@@ -134,10 +134,10 @@ export namespace api {
             extract_streams(streams: any): void;
             expired(): boolean;
             maybeExpired(): boolean;
-            set(volume: any, live: any, time: any): void;
-            volume: any;
+            set(volume: number, live: any, time: number): void;
+            volume: number | undefined;
             live: any;
-            time: any;
+            time: number | undefined;
             length: number;
             toString(): string;
             toLocaleString(): string;

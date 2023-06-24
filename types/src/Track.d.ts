@@ -1,18 +1,55 @@
 export class Track {
-    constructor(platform: any);
-    platform: any;
+    /**
+     *
+     * @param {string} platform
+     */
+    constructor(platform: string);
+    /** @type {string} */
+    platform: string;
+    /** @type {boolean} */
     playable: boolean;
+    /** @type {number} */
     duration: number;
-    setOwner(name: any, icons: any): this;
-    author: any;
-    icons: any;
-    setMetadata(id: any, title: any, duration: any, thumbnails: any): this;
-    id: any;
-    title: any;
-    thumbnails: any;
+    /** @type {unknown} */
+    streams: unknown;
+    /** @type {string | undefined} */
+    author: string | undefined;
+    /** @type {any | undefined} */
+    icons: any | undefined;
+    /** @type {string | undefined} */
+    id: string | undefined;
+    /** @type {string | undefined} */
+    title: string | undefined;
+    /** @type {any | undefined} */
+    thumbnails: any | undefined;
+    /**
+     *
+     * @param {string} name
+     * @param {*} icons
+     * @returns {this}
+     */
+    setOwner(name: string, icons: any): this;
+    /**
+     *
+     * @param {string} id
+     * @param {string} title
+     * @param {number} duration
+     * @param {*} thumbnails
+     * @returns {this}
+     */
+    setMetadata(id: string, title: string, duration: number, thumbnails: any): this;
+    /**
+     *
+     * @param {*} streams
+     * @returns {this}
+     */
     setStreams(streams: any): this;
-    streams: any;
-    setPlayable(playable: any): this;
+    /**
+     *
+     * @param {boolean} playable
+     * @returns {this}
+     */
+    setPlayable(playable: boolean): this;
     /**
      *
      * @returns {Promise<unknown>}
@@ -27,54 +64,156 @@ export class Track {
      * @returns {string | null}
      */
     get url(): string | null;
-    equals(other: any): boolean;
+    /**
+     *
+     * @param {Track} other
+     * @returns {boolean}
+     */
+    equals(other: Track): boolean;
 }
 export class TrackResults extends Array<any> {
     constructor(arrayLength?: number | undefined);
     constructor(arrayLength: number);
     constructor(...items: any[]);
-    next(): Promise<null>;
+    /**
+     *
+     * @returns {Promise<unknown | null>}
+     */
+    next(): Promise<unknown | null>;
 }
 export class TrackPlaylist extends TrackResults {
-    setMetadata(title: any, description: any): this;
-    title: any;
-    description: any;
-    setFirstTrack(track: any): this;
-    firstTrack: any;
+    /** @type {string | undefined} */
+    title: string | undefined;
+    /** @type {string | undefined} */
+    description: string | undefined;
+    /** @type {Track | undefined} */
+    firstTrack: Track | undefined;
+    /**
+     *
+     * @param {string} title
+     * @param {string} description
+     * @returns {this}
+     */
+    setMetadata(title: string, description: string): this;
+    /**
+     *
+     * @param {Track} track
+     * @returns {this}
+     */
+    setFirstTrack(track: Track): this;
+    /**
+     *
+     * @returns {Promise<this>}
+     */
     load(): Promise<this>;
-    get url(): null;
+    /** @returns {string | null} */
+    get url(): string | null;
 }
 export class TrackImage {
-    static from(array: any): any;
-    constructor(url: any, width: any, height: any);
-    url: any;
-    width: any;
-    height: any;
+    /**
+     *
+     * @param {{url:string;width:number;height:number}[]} array
+     * @returns {TrackImage[]}
+     */
+    static from(array: {
+        url: string;
+        width: number;
+        height: number;
+    }[]): TrackImage[];
+    /**
+     *
+     * @param {string} url
+     * @param {number} width
+     * @param {number} height
+     */
+    constructor(url: string, width: number, height: number);
+    /** @type {string} */
+    url: string;
+    /** @type {number} */
+    width: number;
+    /** @type {number} */
+    height: number;
 }
 export class TrackStream {
-    constructor(url: any);
-    url: any;
+    /**
+     *
+     * @param {string} url
+     */
+    constructor(url: string);
+    /** @type {string} */
+    url: string;
+    /** @type {boolean} */
     video: boolean;
+    /** @type {boolean} */
     audio: boolean;
+    /** @type {number} */
     bitrate: number;
+    /** @type {number} */
     duration: number;
-    container: any;
-    codecs: any;
-    setTracks(video: any, audio: any): this;
-    setBitrate(bitrate: any): this;
-    setDuration(duration: any): this;
+    /** @type {any | null} */
+    container: any | null;
+    /** @type {any | null} */
+    codecs: any | null;
+    /**
+     *
+     * @param {boolean} video
+     * @param {boolean} audio
+     * @returns {this}
+     */
+    setTracks(video: boolean, audio: boolean): this;
+    /**
+     *
+     * @param {number} bitrate
+     * @returns {this}
+     */
+    setBitrate(bitrate: number): this;
+    /**
+     *
+     * @param {number} duration
+     * @returns {this}
+     */
+    setDuration(duration: number): this;
+    /**
+     *
+     * @param {any} container
+     * @param {any} codecs
+     * @returns {this}
+     */
     setMetadata(container: any, codecs: any): this;
-    equals(other: any): boolean;
-    getUrl(): Promise<null>;
+    /**
+     *
+     * @param {TrackStream} other
+     * @returns {boolean}
+     */
+    equals(other: TrackStream): boolean;
+    /**
+     *
+     * @returns {Promise<string | null>}
+     */
+    getUrl(): Promise<string | null>;
 }
 export class TrackStreams extends Array<any> {
     constructor(arrayLength?: number | undefined);
     constructor(arrayLength: number);
     constructor(...items: any[]);
-    set(volume: any, live: any, time: any): void;
-    volume: any;
+    /**
+     *
+     * @param {number} volume
+     * @param {any} live
+     * @param {number} time
+     */
+    set(volume: number, live: any, time: number): void;
+    volume: number | undefined;
     live: any;
-    time: any;
+    time: number | undefined;
+    /**
+     *
+     * @returns {boolean}
+     */
     expired(): boolean;
+    /**
+     *
+     * @returns {boolean}
+     */
     maybeExpired(): boolean;
 }
