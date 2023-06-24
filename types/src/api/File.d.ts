@@ -1,11 +1,26 @@
 declare class FileTrack extends Track {
-    constructor(url: any, isfile?: boolean);
-    stream_url: any;
+    /**
+     *
+     * @param {string} url
+     * @param {boolean} isfile
+     */
+    constructor(url: string, isfile?: boolean);
+    stream_url: string;
+    id: string;
     isLocalFile: boolean;
     getStreams(): Promise<void>;
     fetch(): Promise<void>;
-    get url(): any;
+    /**
+     * @returns {string}
+     */
+    get url(): string;
 }
 import { Track } from "../Track";
-export declare function create(url: any, isfile: any): Track;
+/**
+ *
+ * @param {string} url
+ * @param {boolean} isfile
+ * @returns {FileTrack}
+ */
+export declare function create(url: string, isfile: boolean): Track;
 export { FileTrack as Track };

@@ -13,9 +13,20 @@ export class Track {
     setStreams(streams: any): this;
     streams: any;
     setPlayable(playable: any): this;
-    fetch(): Promise<null>;
-    getStreams(): Promise<null>;
-    get url(): null;
+    /**
+     *
+     * @returns {Promise<unknown>}
+     */
+    fetch(): Promise<unknown>;
+    /**
+     *
+     * @returns {Promise<unknown>}
+     */
+    getStreams(): Promise<unknown>;
+    /**
+     * @returns {string | null}
+     */
+    get url(): string | null;
     equals(other: any): boolean;
 }
 export class TrackResults extends Array<any> {

@@ -1,9 +1,15 @@
 export = SourceError;
 declare class SourceError extends Error {
-    constructor(code: any, message: any, error: any);
-    code: any;
-    stack: any;
-    details: any;
+    /**
+     *
+     * @param {number} code
+     * @param {string} message
+     * @param {Error} error
+     */
+    constructor(code: number, message: string, error: Error);
+    code: number;
+    stack: string | undefined;
+    details: string | undefined;
 }
 declare namespace SourceError {
     let codes: {};
