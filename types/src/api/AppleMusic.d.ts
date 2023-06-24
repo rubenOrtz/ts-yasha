@@ -1,47 +1,55 @@
 export = api;
 declare const api: {
-    token: any;
-    reloading: Promise<void> | null;
+    token: string | null;
+    reloading: null | Promise<void>;
     needs_reload: boolean;
-    reload(force: any): Promise<void>;
+    reload(force?: boolean | undefined): Promise<void>;
     load(): Promise<void>;
     prefetch(): Promise<void> | undefined;
-    api_request(path: any, query?: {}, options?: {}): Promise<any>;
-    check_valid_id(id: any): void;
-    get(id: any): Promise<AppleMusicTrack>;
-    get_streams(id: any): Promise<any>;
-    get_next(url: any, param: any): number;
-    search(query: any, offset?: number, limit?: number): Promise<AppleMusicResults>;
-    list_once(type: any, id: any, offset?: number, limit?: number): Promise<AppleMusicPlaylist>;
-    check_valid_playlist_id(id: any): void;
-    playlist_once(id: any, offset: any, length: any): Promise<AppleMusicPlaylist>;
-    album_once(id: any, offset: any, length: any): Promise<AppleMusicPlaylist>;
-    list(type: any, id: any, limit: any): Promise<any[]>;
-    playlist(id: any, length: any): Promise<any[]>;
-    album(id: any, length: any): Promise<any[]>;
+    api_request(path: string, query?: {
+        [key: string]: any;
+    } | undefined, options?: {
+        [key: string]: any;
+        headers?: {
+            [key: string]: any;
+            authorization?: string | undefined;
+            origin?: string | undefined;
+        } | undefined;
+    } | undefined): Promise<any>;
+    check_valid_id(id: string): void;
+    get(id: string): Promise<AppleMusicTrack>;
+    get_streams(id: string): Promise<any>;
+    get_next(url: string, param: any): number;
+    search(query: any, offset?: number | undefined, limit?: number | undefined): Promise<AppleMusicResults>;
+    list_once(type: string, id: string, offset?: number | undefined, limit?: number | undefined): Promise<AppleMusicPlaylist>;
+    check_valid_playlist_id(id: string): void;
+    playlist_once(id: string, offset?: number | undefined, length?: number | undefined): Promise<AppleMusicPlaylist>;
+    album_once(id: string, offset?: number | undefined, length?: number | undefined): Promise<AppleMusicPlaylist>;
+    list(type: string, id: string, limit?: number | undefined): Promise<AppleMusicPlaylist>;
+    playlist(id: string, length?: number | undefined): Promise<AppleMusicPlaylist>;
+    album(id: string, length?: number | undefined): Promise<AppleMusicPlaylist>;
 };
 declare class AppleMusicTrack extends Track {
     constructor();
-    gen_image(url: any, artist: any): TrackImage[];
+    artists: string[];
+    explicit: boolean;
+    protected gen_image(url: string, artist?: boolean | undefined): [TrackImage];
     from(track: any): this;
-    artists: any;
-    explicit: boolean | undefined;
     fetch(): Promise<AppleMusicTrack>;
-    getStreams(): Promise<any>;
     get url(): string;
 }
 declare class AppleMusicResults extends TrackResults {
-    set_continuation(query: any, start: any): void;
-    query: any;
-    start: any;
+    query: any | null;
+    start: number | undefined;
+    protected set_continuation(query: any, start: number): void;
     next(): Promise<AppleMusicResults | null>;
 }
 declare class AppleMusicPlaylist extends TrackPlaylist {
-    set(type: any, id: any): void;
-    type: any;
-    id: any;
-    set_continuation(start: any): void;
-    start: any;
+    type: string | undefined;
+    id: string | undefined;
+    start: number | undefined;
+    set(type: string, id: string): void;
+    protected set_continuation(start: any): void;
     next(): Promise<AppleMusicPlaylist | null>;
     get url(): string;
 }

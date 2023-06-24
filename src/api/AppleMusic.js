@@ -5,23 +5,41 @@ const Youtube = require('./Youtube');
 const {Track, TrackImage, TrackResults, TrackPlaylist} = require('../Track');
 
 class AppleMusicTrack extends Track{
+	/** @type {string[]} */
+	artists = []
+	/** @type {boolean} */
+	explicit = false
+
 	constructor(){
 		super('AppleMusic');
 	}
 
+	/**
+	 * 
+	 * @protected
+	 * @param {string} url 
+	 * @param {boolean} [artist] 
+	 * @returns {[TrackImage]}
+	 */
 	gen_image(url, artist){
-		var dim = artist ? 220 : 486;
-
+		const dim = artist ? 220 : 486;
+		// @ts-ignore
 		return [new TrackImage(url.replaceAll('{w}', dim).replaceAll('{h}', dim).replaceAll('{c}', artist ? 'sr' : 'bb').replaceAll('{f}', 'webp'), dim, dim)];
 	}
 
+	/**
+	 * 
+	 * @param {*} track 
+	 * @returns {this}
+	 */
 	from(track){
-		var icon;
+		let icon;
 
-		for(var artist of track.relationships.artists.data)
+		for(const artist of track.relationships.artists.data)
 			if(artist.attributes.artwork)
 				icon = this.gen_image(artist.attributes.artwork.url, true);
-		this.artists = track.relationships.artists.data.map(artist => artist.attributes.name);
+		// @ts-ignore
+		this.artists = track.relationships.artists.data.map((artist) => artist.attributes.name);
 		this.setOwner(this.artists.join(', '), icon);
 		this.setMetadata(track.id, track.attributes.name, track.attributes.durationInMillis / 1000, this.gen_image(track.attributes.artwork.url));
 
@@ -30,25 +48,52 @@ class AppleMusicTrack extends Track{
 		return this;
 	}
 
+	/**
+	 * 
+	 * @returns {Promise<AppleMusicTrack>}
+	 */
 	async fetch(){
+		// @ts-ignore
 		return api.get(this.id);
 	}
 
+	/**
+	 * 
+	 * @returns {Promise<unknown>}
+	 */
 	async getStreams(){
 		return Youtube.track_match(this);
 	}
 
+	/** 
+	 * @returns {string}
+	 */
 	get url(){
 		return 'https://music.apple.com/song/' + this.id;
 	}
 }
 
 class AppleMusicResults extends TrackResults{
+	/** @type {any | null} */
+	query = null
+	/** @type {number | undefined} */
+	start
+
+	/**
+	 * 
+	 * @protected
+	 * @param {*} query 
+	 * @param {number} start 
+	 */
 	set_continuation(query, start){
 		this.query = query;
 		this.start = start;
 	}
 
+	/**
+	 * 
+	 * @returns {Promise<AppleMusicResults | null>}
+	 */
 	async next(){
 		if(this.query != null)
 			return await api.search(this.query, this.start);
@@ -57,21 +102,46 @@ class AppleMusicResults extends TrackResults{
 }
 
 class AppleMusicPlaylist extends TrackPlaylist{
+	/** @type {string | undefined} */
+	type
+	/** @type {string | undefined} */
+	id
+	/** @type {number | undefined} */
+	start
+
+	/**
+	 * 
+	 * @param {string} type 
+	 * @param {string} id 
+	 */
 	set(type, id){
 		this.type = type;
 		this.id = id;
 	}
 
+	/**
+	 * 
+	 * @protected
+	 * @param {*} start 
+	 */
 	set_continuation(start){
 		this.start = start;
 	}
 
+	/**
+	 * 
+	 * @returns {Promise<AppleMusicPlaylist | null>}
+	 */
 	async next(){
 		if(this.start !== undefined)
+			// @ts-ignore
 			return await api.list_once(this.type, this.id, this.start);
 		return null;
 	}
 
+	/**
+	 * @returns {string}
+	 */
 	get url(){
 		if(this.type == 'playlists')
 			return 'https://music.apple.com/playlist/' + this.id;
@@ -80,12 +150,27 @@ class AppleMusicPlaylist extends TrackPlaylist{
 }
 
 const api = (new class AppleMusicAPI{
+	/** @type {string | null} */
+	token
+	/** @type {null | Promise<void>} */
+	reloading
+	/** 
+	 * @type {boolean}
+	 * @protected
+	 */
+	needs_reload
+
 	constructor(){
 		this.token = null;
 		this.reloading = null;
 		this.needs_reload = false;
 	}
 
+	/**
+	 * 
+	 * @param {boolean} [force] 
+	 * @returns {Promise<void>}
+	 */
 	async reload(force){
 		if(this.reloading){
 			if(force)
@@ -108,8 +193,9 @@ const api = (new class AppleMusicAPI{
 	}
 
 	async load(){
-		var {body} = await Request.get('https://music.apple.com/us/browse');
-		var config = /<meta name="desktop-music-app\/config\/environment" content="(.*?)">/.exec(body);
+		const {body} = await Request.get('https://music.apple.com/us/browse');
+		/** @type {any} */
+		let config = /<meta name="desktop-music-app\/config\/environment" content="(.*?)">/.exec(body);
 
 		if(!config)
 			throw new SourceError.INTERNAL_ERROR(null, new Error('Missing config'));
@@ -124,6 +210,10 @@ const api = (new class AppleMusicAPI{
 		this.token = config.MEDIA_API.token;
 	}
 
+	/**
+	 * 
+	 * @returns {Promise<void> | undefined}
+	 */
 	prefetch(){
 		if(!this.token)
 			this.reload();
@@ -131,10 +221,20 @@ const api = (new class AppleMusicAPI{
 			return this.reloading;
 	}
 
+	/**
+	 * 
+	 * @protected
+	 * @param {string} path 
+	 * @param {{[key:string]:any}} [query] 
+	 * @param {{headers?:{authorization?:string;origin?:string;[key:string]:any};[key:string]:any}} [options] 
+	 * @returns 
+	 */
 	async api_request(path, query = {}, options = {}){
-		var res, body, queries = [];
+		let res, body 
+		/** @type {string[] | string} */
+		let queries = [];
 
-		for(var name in query)
+		for(const name in query)
 			queries.push(encodeURIComponent(name) + '=' + encodeURIComponent(query[name]));
 		if(queries.length)
 			queries = '?' + queries.join('&');
@@ -142,7 +242,7 @@ const api = (new class AppleMusicAPI{
 			queries = '';
 		if(!options.headers)
 			options.headers = {};
-		for(var tries = 0; tries < 2; tries++){
+		for(let tries = 0; tries < 2; tries++){
 			await this.prefetch();
 
 			options.headers.authorization = `Bearer ${this.token}`;
@@ -181,15 +281,25 @@ const api = (new class AppleMusicAPI{
 		return body;
 	}
 
+	/**
+	 * 
+	 * @protected
+	 * @param {string} id 
+	 */
 	check_valid_id(id){
 		if(!/^[\d]+$/.test(id))
 			throw new SourceError.NOT_FOUND();
 	}
 
+	/**
+	 * 
+	 * @param {string} id 
+	 * @returns 
+	 */
 	async get(id){
 		this.check_valid_id(id);
 
-		var track = await this.api_request('songs/' + id, {
+		const track = await this.api_request('songs/' + id, {
 			'fields[artists]': 'url,name,artwork,hero',
 			'include[songs]': 'artists',
 			'extend': 'artistUrl',
@@ -203,14 +313,28 @@ const api = (new class AppleMusicAPI{
 		}
 	}
 
+	/**
+	 * 
+	 * @protected
+	 * @param {string} id 
+	 * @returns 
+	 */
 	async get_streams(id){
 		return Youtube.track_match(await this.get(id));
 	}
 
+	/**
+	 * 
+	 * @protected
+	 * @param {string} url 
+	 * @param {*} param 
+	 * @returns 
+	 */
 	get_next(url, param){
-		var num;
-
+		let num;
+		// @ts-ignore
 		url = new URL(url, 'https://amp-api.music.apple.com');
+		// @ts-ignore
 		num = parseInt(url.searchParams.get(param));
 
 		if(!Number.isFinite(num))
@@ -218,8 +342,15 @@ const api = (new class AppleMusicAPI{
 		return num;
 	}
 
+	/**
+	 * 
+	 * @param {*} query 
+	 * @param {number} [offset] 
+	 * @param {number} [limit] 
+	 * @returns {Promise<AppleMusicResults>}
+	 */
 	async search(query, offset = 0, limit = 25){
-		var data = await this.api_request('search', {
+		const data = await this.api_request('search', {
 			groups: 'song',
 			offset,
 			limit,
@@ -239,13 +370,14 @@ const api = (new class AppleMusicAPI{
 			'omit[resource]': 'autos'
 		});
 
-		var results = new AppleMusicResults();
-		var song = data.results.song;
+		const results = new AppleMusicResults();
+		const song = data.results.song;
 
 		if(!song)
 			return results;
 		try{
 			if(song.next)
+				// @ts-ignore
 				results.set_continuation(query, this.get_next(song.next, 'offset'));
 			for(var result of song.data)
 				results.push(new AppleMusicTrack().from(result));
@@ -256,11 +388,20 @@ const api = (new class AppleMusicAPI{
 		return results;
 	}
 
+	/**
+	 * 
+	 * @protected
+	 * @param {string} type 
+	 * @param {string} id 
+	 * @param {number} [offset] 
+	 * @param {number} [limit] 
+	 * @returns {Promise<AppleMusicPlaylist>}
+	 */
 	async list_once(type, id, offset = 0, limit = 100){
 		this.check_valid_playlist_id(id);
 
-		var result = new AppleMusicPlaylist();
-		var playlist;
+		const result = new AppleMusicPlaylist();
+		let playlist;
 
 		if(!offset){
 			playlist = await this. api_request(`${type}/${id}`, {
@@ -284,6 +425,8 @@ const api = (new class AppleMusicAPI{
 				limit,
 				'include[songs]': 'artists',
 				'fields[artists]': 'name,url',
+				// TODO? this is overide
+				// @ts-ignore
 				'fields[artists]': 'name,url,artwork',
 			});
 		}
@@ -300,6 +443,7 @@ const api = (new class AppleMusicAPI{
 			for(var item of playlist.data)
 				result.push(new AppleMusicTrack().from(item));
 			if(playlist.next)
+				// @ts-ignore
 				result.set_continuation(this.get_next(playlist.next, 'offset'));
 		}catch(e){
 			throw new SourceError.INTERNAL_ERROR(null, e);
@@ -308,40 +452,82 @@ const api = (new class AppleMusicAPI{
 		return result;
 	}
 
+	/**
+	 * 
+	 * @protected
+	 * @param {string} id 
+	 */
 	check_valid_playlist_id(id){
 		if(!/^[\w\.-]+$/.test(id))
 			throw new SourceError.NOT_FOUND();
 	}
 
+	/**
+	 * 
+	 * @protected
+	 * @param {string} id 
+	 * @param {number} [offset] 
+	 * @param {number} [length] 
+	 * @returns {Promise<AppleMusicPlaylist>}
+	 */
 	async playlist_once(id, offset, length){
 		return await this.list_once('playlists', id, offset, length);
 	}
 
+	/**
+	 * 
+	 * @protected
+	 * @param {string} id 
+	 * @param {number} [offset] 
+	 * @param {number} [length] 
+	 * @returns {Promise<AppleMusicPlaylist>}
+	 */
 	async album_once(id, offset, length){
 		return await this.list_once('albums', id, offset, length);
 	}
 
+	/**
+	 * 
+	 * @param {string} type 
+	 * @param {string} id 
+	 * @param {number} [limit] 
+	 * @returns {Promise<AppleMusicPlaylist>}
+	 */
 	async list(type, id, limit){
-		var list = null;
-		var offset = 0;
+		let list = null;
+		let offset = 0;
 
 		do{
-			var result = await this.list_once(type, id, offset);
+			const result = await this.list_once(type, id, offset);
 
 			if(!list)
 				list = result;
 			else
 				list = list.concat(result);
+			// @ts-ignore
 			offset = result.start;
 		}while(offset !== undefined && (!limit || list.length < limit));
-
+		// @ts-ignore
 		return list;
 	}
 
+	/**
+	 * 
+	 * @param {string} id 
+	 * @param {number} [length] 
+	 * @returns {Promise<AppleMusicPlaylist>}
+	 */
 	async playlist(id, length){
 		return this.list('playlists', id, length);
 	}
 
+
+	/**
+	 * 
+	 * @param {string} id 
+	 * @param {number} [length] 
+	 * @returns 
+	 */
 	async album(id, length){
 		return this.list('albums', id, length);
 	}
