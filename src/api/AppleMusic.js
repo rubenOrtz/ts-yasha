@@ -379,7 +379,7 @@ const api = (new class AppleMusicAPI{
 			if(song.next)
 				// @ts-ignore
 				results.set_continuation(query, this.get_next(song.next, 'offset'));
-			for(var result of song.data)
+			for(const result of song.data)
 				results.push(new AppleMusicTrack().from(result));
 		}catch(e){
 			throw new SourceError.INTERNAL_ERROR(null, e);
