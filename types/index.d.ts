@@ -121,17 +121,46 @@ export namespace api {
         reload(): Promise<void>;
         prefetch(): Promise<void>;
         load(): Promise<void>;
-        request(path: any, query?: {}): Promise<any>;
-        api_request(path: any, query: any): Promise<any>;
-        resolve_playlist(list: any, offset: number | undefined, limit: any): Promise<import("./src/api/Soundcloud").Playlist | null>;
-        resolve(url: any): Promise<import("./src/api/Soundcloud").Track | import("./src/api/Soundcloud").Playlist | null>;
-        resolve_shortlink(id: any): Promise<import("./src/api/Soundcloud").Track | import("./src/api/Soundcloud").Playlist | null>;
-        check_valid_id(id: any): void;
-        get(id: any): Promise<import("./src/api/Soundcloud").Track>;
-        get_streams(id: any): Promise<{
+        request(path: string, query?: {
+            [key: string]: string | null;
+        } | undefined): Promise<any>;
+        api_request(path: string, query?: {
+            [key: string]: any;
+        } | undefined): Promise<any>;
+        resolve_playlist(list: {
+            tracks: {
+                id: string;
+                streamable: boolean;
+            }[];
+            permalink_url: string;
+            title: string;
+            description: string;
+            id: string;
+        }, offset: number | undefined, limit: number): Promise<import("./src/api/Soundcloud").Playlist | null>;
+        resolve(url: string): Promise<import("./src/api/Soundcloud").Track | import("./src/api/Soundcloud").Playlist | null>;
+        resolve_shortlink(id: string): Promise<import("./src/api/Soundcloud").Track | import("./src/api/Soundcloud").Playlist | null>;
+        check_valid_id(id: string): void;
+        get(id: string): Promise<import("./src/api/Soundcloud").Track | import("./src/api/Soundcloud").Playlist | null>;
+        get_streams(id: string): Promise<{
             [n: number]: any;
-            from(track: any): any;
-            extract_streams(streams: any): void;
+            from(track: {
+                media: {
+                    transcodings: {
+                        format: {
+                            mime_type: string;
+                        };
+                        url: string;
+                        duration: number;
+                    }[];
+                };
+            }): any;
+            extract_streams(streams: {
+                format: {
+                    mime_type: string;
+                };
+                url: string;
+                duration: number;
+            }[]): void;
             expired(): boolean;
             maybeExpired(): boolean;
             set(volume: number, live: any, time: number): void;
@@ -220,9 +249,9 @@ export namespace api {
             };
             at(index: number): any;
         }>;
-        search(query: any, offset: any, limit?: number): Promise<import("./src/api/Soundcloud").Results>;
-        playlist_once(id: any, offset?: number, limit?: number): Promise<import("./src/api/Soundcloud").Playlist | null>;
-        playlist(id: any, limit: any): Promise<import("./src/api/Soundcloud").Playlist | null>;
+        search(query: string, offset: number, limit?: number | undefined): Promise<import("./src/api/Soundcloud").Results>;
+        playlist_once(id: string, offset?: number | undefined, limit?: number | undefined): Promise<import("./src/api/Soundcloud").Playlist | null>;
+        playlist(id: string, limit?: number | undefined): Promise<import("./src/api/Soundcloud").Playlist | null>;
     };
     let Spotify: {
         token: any;

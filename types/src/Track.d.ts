@@ -45,8 +45,8 @@ export class TrackImage {
     height: number;
 }
 export class TrackStream {
-    constructor(url: string);
-    url: string;
+    constructor(url: string | null);
+    url: string | null;
     video: boolean;
     audio: boolean;
     bitrate: number;
