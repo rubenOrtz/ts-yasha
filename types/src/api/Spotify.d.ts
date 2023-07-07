@@ -1,5 +1,8 @@
 export = api;
 declare const api: {
+    Track: typeof SpotifyTrack;
+    Results: typeof SpotifyResults;
+    Playlist: typeof SpotifyPlaylist;
     token: any;
     reloading: Promise<void> | null;
     needs_reload: boolean;
@@ -12,15 +15,15 @@ declare const api: {
     get(id: any): Promise<SpotifyTrack>;
     get_streams(id: any): Promise<any>;
     search(query: any, start?: number, length?: number): Promise<SpotifyResults>;
-    list_once(type: any, id: any, start: number | undefined, length: any): Promise<SpotifyPlaylist>;
+    list_once(type: string, id: string, start?: number | undefined, length?: number | undefined): Promise<SpotifyPlaylist>;
     playlist_once(id: any, start: number | undefined, length: any): Promise<SpotifyPlaylist>;
     album_once(id: any, start: number | undefined, length: any): Promise<SpotifyPlaylist>;
-    list(type: any, id: any, limit: any): Promise<any[]>;
-    playlist(id: any, length: any): Promise<any[]>;
-    album(id: any, length: any): Promise<any[]>;
+    list(type: any, id: string, limit?: number | undefined): Promise<SpotifyPlaylist>;
+    playlist(id: string, length?: number | undefined): Promise<SpotifyPlaylist>;
+    album(id: any, length: any): Promise<SpotifyPlaylist>;
     set_cookie(cookie: any): void;
 };
-declare class SpotifyTrack extends Track {
+declare class SpotifyTrack extends Track<any> {
     constructor();
     from(track: any, artist: any): this;
     artists: any;

@@ -1,5 +1,8 @@
 export = api;
 declare var api: {
+    Track: typeof SoundcloudTrack;
+    Results: typeof SoundcloudResults;
+    Playlist: typeof SoundcloudPlaylist;
     client_id: string | null;
     reloading: Promise<void> | null;
     reload(): Promise<void>;
@@ -30,6 +33,24 @@ declare var api: {
     playlist_once(id: string, offset?: number | undefined, limit?: number | undefined): Promise<SoundcloudPlaylist | null>;
     playlist(id: string, limit?: number | undefined): Promise<SoundcloudPlaylist | null>;
 };
+declare class SoundcloudTrack extends Track<"Soundcloud"> {
+    constructor();
+    protected permalink_url: string | null;
+    from(track: any): this;
+    get_thumbnails(track: any): {
+        width: number;
+        height: number;
+        url: string;
+    }[];
+    fetch(): Promise<SoundcloudTrack>;
+    getStreams(): Promise<SoundcloudStreams>;
+}
+declare class SoundcloudResults extends TrackResults {
+    query: any;
+    start: number;
+    set_continuation(query: any, start: number): void;
+    next(): Promise<SoundcloudResults>;
+}
 declare class SoundcloudPlaylist extends TrackPlaylist {
     id: string | undefined;
     start: number | undefined;
@@ -42,18 +63,6 @@ declare class SoundcloudPlaylist extends TrackPlaylist {
     set_continuation(id: string, start: number): void;
     get url(): string | undefined;
     next(): Promise<SoundcloudPlaylist | null>;
-}
-declare class SoundcloudTrack extends Track {
-    constructor();
-    protected permalink_url: string | null;
-    from(track: any): this;
-    get_thumbnails(track: any): {
-        width: number;
-        height: number;
-        url: string;
-    }[];
-    fetch(): Promise<SoundcloudTrack>;
-    getStreams(): Promise<SoundcloudStreams>;
 }
 declare class SoundcloudStreams extends TrackStreams {
     from(track: {
@@ -75,13 +84,7 @@ declare class SoundcloudStreams extends TrackStreams {
         duration: number;
     }[]): void;
 }
-declare class SoundcloudResults extends TrackResults {
-    query: any;
-    start: number;
-    set_continuation(query: any, start: number): void;
-    next(): Promise<SoundcloudResults>;
-}
-import { TrackPlaylist } from "../Track";
 import { Track } from "../Track";
-import { TrackStreams } from "../Track";
 import { TrackResults } from "../Track";
+import { TrackPlaylist } from "../Track";
+import { TrackStreams } from "../Track";

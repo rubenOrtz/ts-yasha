@@ -1,4 +1,11 @@
-declare class FileTrack extends Track {
+declare const _exports: File;
+export = _exports;
+export { FileTrack as Track };
+declare class File {
+    Track: typeof FileTrack;
+    create(url: string, isfile: boolean): FileTrack;
+}
+declare class FileTrack extends Track<"File"> {
     constructor(url: string, isfile?: boolean);
     private stream_url;
     isLocalFile: boolean;
@@ -8,5 +15,3 @@ declare class FileTrack extends Track {
     get url(): string;
 }
 import { Track } from "../Track";
-export declare function create(url: string, isfile: boolean): Track;
-export { FileTrack as Track };

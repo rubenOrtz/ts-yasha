@@ -124,8 +124,11 @@ class TrackStreams extends Array {
     }
 }
 
+/**
+ * @template T extends 'Spotify' | 'Soundcloud' | 'File' | 'AppleMusic' | 'Youtube'
+ */
 class Track {
-    /** @type {string} */
+    /** @type {T} */
     platform
     /** @type {boolean} */
     playable
@@ -145,7 +148,7 @@ class Track {
     thumbnails
     /**
      *
-     * @param {string} platform
+     * @param {T} platform
      */
     constructor(platform) {
         this.platform = platform
@@ -230,7 +233,7 @@ class Track {
 
     /**
      *
-     * @param {Track} other
+     * @param {Track<any>} other
      * @returns {boolean}
      */
     equals(other) {

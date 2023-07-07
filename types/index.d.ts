@@ -1,5 +1,8 @@
 export namespace api {
     let Youtube: {
+        Track: typeof import("./src/api/Youtube").Track;
+        Results: typeof import("./src/api/Youtube").Results;
+        Playlist: typeof import("./src/api/Youtube").Playlist;
         innertube_client: {
             clientName: string;
             clientVersion: string;
@@ -11,7 +14,7 @@ export namespace api {
         sapisid: string;
         api_request(path: any, body?: {}, query?: string, origin?: string): Promise<{}>;
         get(id: any): Promise<import("./src/api/Youtube").Track>;
-        get_streams(id: any): Promise<{
+        get_streams(id: string): Promise<{
             [n: number]: any;
             from(start: any, playerResponse: any): any;
             expire: any;
@@ -105,7 +108,7 @@ export namespace api {
             at(index: number): any;
         }>;
         playlist_once(id: any, start?: number): Promise<import("./src/api/Youtube").Playlist>;
-        playlist(id: any, limit: any): Promise<any[]>;
+        playlist(id: string, limit?: number | undefined): Promise<import("./src/api/Youtube").Playlist[]>;
         search(query: any, continuation: any): Promise<import("./src/api/Youtube").Results>;
         set_cookie(cookiestr: any): void;
         string_word_match(big: any, small: any): number;
@@ -116,6 +119,9 @@ export namespace api {
         track_match(track: any): Promise<any>;
     };
     let Soundcloud: {
+        Track: typeof import("./src/api/Soundcloud").Track;
+        Results: typeof import("./src/api/Soundcloud").Results;
+        Playlist: typeof import("./src/api/Soundcloud").Playlist;
         client_id: string | null;
         reloading: Promise<void> | null;
         reload(): Promise<void>;
@@ -254,6 +260,9 @@ export namespace api {
         playlist(id: string, limit?: number | undefined): Promise<import("./src/api/Soundcloud").Playlist | null>;
     };
     let Spotify: {
+        Track: typeof import("./src/api/Spotify").Track;
+        Results: typeof import("./src/api/Spotify").Results;
+        Playlist: typeof import("./src/api/Spotify").Playlist;
         token: any;
         reloading: Promise<void> | null;
         needs_reload: boolean;
@@ -266,12 +275,12 @@ export namespace api {
         get(id: any): Promise<import("./src/api/Spotify").Track>;
         get_streams(id: any): Promise<any>;
         search(query: any, start?: number, length?: number): Promise<import("./src/api/Spotify").Results>;
-        list_once(type: any, id: any, start: number | undefined, length: any): Promise<import("./src/api/Spotify").Playlist>;
+        list_once(type: string, id: string, start?: number | undefined, length?: number | undefined): Promise<import("./src/api/Spotify").Playlist>;
         playlist_once(id: any, start: number | undefined, length: any): Promise<import("./src/api/Spotify").Playlist>;
         album_once(id: any, start: number | undefined, length: any): Promise<import("./src/api/Spotify").Playlist>;
-        list(type: any, id: any, limit: any): Promise<any[]>;
-        playlist(id: any, length: any): Promise<any[]>;
-        album(id: any, length: any): Promise<any[]>;
+        list(type: any, id: string, limit?: number | undefined): Promise<import("./src/api/Spotify").Playlist>;
+        playlist(id: string, length?: number | undefined): Promise<import("./src/api/Spotify").Playlist>;
+        album(id: any, length: any): Promise<import("./src/api/Spotify").Playlist>;
         set_cookie(cookie: any): void;
     };
 }

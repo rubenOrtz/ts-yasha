@@ -1,5 +1,8 @@
 export = api;
 declare const api: {
+    Track: typeof AppleMusicTrack;
+    Results: typeof AppleMusicResults;
+    Playlist: typeof AppleMusicPlaylist;
     token: string | null;
     reloading: null | Promise<void>;
     needs_reload: boolean;
@@ -29,7 +32,7 @@ declare const api: {
     playlist(id: string, length?: number | undefined): Promise<AppleMusicPlaylist>;
     album(id: string, length?: number | undefined): Promise<AppleMusicPlaylist>;
 };
-declare class AppleMusicTrack extends Track {
+declare class AppleMusicTrack extends Track<"AppleMusic"> {
     constructor();
     artists: string[];
     explicit: boolean;

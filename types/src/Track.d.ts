@@ -1,6 +1,6 @@
-export class Track {
-    constructor(platform: string);
-    platform: string;
+export class Track<T> {
+    constructor(platform: T);
+    platform: T;
     playable: boolean;
     duration: number;
     streams: unknown;
@@ -16,7 +16,7 @@ export class Track {
     fetch(): Promise<unknown>;
     getStreams(): Promise<unknown>;
     get url(): string | null;
-    equals(other: Track): boolean;
+    equals(other: Track<any>): boolean;
 }
 export class TrackResults extends Array<any> {
     constructor(arrayLength?: number | undefined);
@@ -27,9 +27,9 @@ export class TrackResults extends Array<any> {
 export class TrackPlaylist extends TrackResults {
     title: string | undefined;
     description: string | undefined;
-    firstTrack: Track | undefined;
+    firstTrack: Track<any> | undefined;
     setMetadata(title: string, description: string): this;
-    setFirstTrack(track: Track): this;
+    setFirstTrack(track: Track<any>): this;
     load(): Promise<this>;
     get url(): string | null;
 }

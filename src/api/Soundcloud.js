@@ -4,6 +4,7 @@ const util = require('./util')
 
 const { Track, TrackImage, TrackResults, TrackPlaylist, TrackStream, TrackStreams } = require('../Track')
 
+/** @extends {Track<'Soundcloud'>} */
 class SoundcloudTrack extends Track {
     /**
      * @type {string | null}
@@ -267,6 +268,11 @@ class SoundcloudStreams extends TrackStreams {
 }
 
 var api = new (class SoundcloudAPI {
+    // ! This is an a modification of the original Soundcloud.js file from the project.
+    Track = SoundcloudTrack
+    Results = SoundcloudResults
+    Playlist = SoundcloudPlaylist
+
     /**
      * @private
      * @type {string | null}
@@ -532,7 +538,6 @@ var api = new (class SoundcloudAPI {
     /**
      * @param {string} id
      * @returns {Promise<SoundcloudStreams>}
-     * @private
      */
     async get_streams(id) {
         this.check_valid_id(id)
