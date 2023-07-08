@@ -1,6 +1,3 @@
-// @ts-nocheck
-
-/** @type {{[key:string]:{message:string;code:number}}} */
 const errors = {
 	NETWORK_ERROR: {
 		message: 'Network error',
@@ -33,22 +30,12 @@ const errors = {
 	}
 };
 
-/**
- * @type {{[key: number]: { message: string; code: number }}}
- */
 const errorCode = {};
 
 for(const name in errors)
 	errorCode[errors[name].code] = errors[name];
 
 class SourceError extends Error{
-	
-	/**
-	 * 
-	 * @param {number} code 
-	 * @param {string} message 
-	 * @param {Error} error 
-	 */
 	constructor(code, message, error){
 		super(message || errorCode[code].message);
 
@@ -60,15 +47,6 @@ class SourceError extends Error{
 		}
 	}
 }
-
-
-SourceError.INTERNAL_ERROR = undefined;
-
-SourceError.NETWORK_ERROR = undefined;
-
-SourceError.NOT_FOUND = undefined;
-
-SourceError.INVALID_RESPONSE = undefined;
 
 SourceError.codes = {};
 
