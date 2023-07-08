@@ -6,13 +6,13 @@ const SourceError = require('./SourceError')
 class APISource {
     /** @type {T} */
     name
-    /** @type {T extends 'Soundcloud' ? import('./api/Soundcloud') : T extends 'Spotify' ? import('./api/Spotify') : import('./api/Youtube')} */
+    /** @type {T extends 'File' ? import('./api/File') : T extends 'Soundcloud' ? import('./api/Soundcloud') : T extends 'Spotify' ? import('./api/Spotify') : import('./api/Youtube')} */
     api
-    /** @type {T extends 'Soundcloud' ? typeof import('./api/Soundcloud').Track : T extends 'Spotify' ? typeof import('./api/Spotify').Track : typeof import('./api/Youtube').Track} */
+    /** @type {T extends 'File' ? undefined : T extends 'Soundcloud' ? typeof import('./api/Soundcloud').Track : T extends 'Spotify' ? typeof import('./api/Spotify').Track : typeof import('./api/Youtube').Track} */
     Track
-    /** @type {T extends 'Soundcloud' ? typeof import('./api/Soundcloud').Results : T extends 'Spotify' ? typeof import('./api/Spotify').Results : typeof import('./api/Youtube').Results}*/
+    /** @type {T extends 'File' ? undefined : T extends 'Soundcloud' ? typeof import('./api/Soundcloud').Results : T extends 'Spotify' ? typeof import('./api/Spotify').Results : typeof import('./api/Youtube').Results}*/
     Results
-    /** @type {T extends 'Soundcloud' ? typeof import('./api/Soundcloud').Playlist : T extends 'Spotify' ? typeof import('./api/Spotify').Playlist : typeof import('./api/Youtube').Playlist}*/
+    /** @type {T extends 'File' ? undefined : T extends 'Soundcloud' ? typeof import('./api/Soundcloud').Playlist : T extends 'Spotify' ? typeof import('./api/Spotify').Playlist : typeof import('./api/Youtube').Playlist}*/
     Playlist
 
     /**
@@ -33,8 +33,8 @@ class APISource {
 
     /**
      *
-     * @param {any} content
-     * @returns {null}
+     * @param {string} content
+     * @returns {any}
      */
     match(content) {
         return null
@@ -43,7 +43,7 @@ class APISource {
     /**
      *
      * @param {any} content
-     * @returns {null}
+     * @returns {any}
      */
     weak_match(content) {
         return null
@@ -60,7 +60,7 @@ class APISource {
 
     /**
      * @param {any} match
-     * @returns {Promise<null | import('./Track')>}
+     * @returns {Promise<any>}
      */
     async resolve(match) {
         return null
@@ -86,16 +86,16 @@ class APISource {
 
     /**
      *
-     * @param {any} query
-     * @returns {Promise<null>}
+     * @param {string} query
+     * @returns {Promise<any>}
      */
     async search(query) {
         return null
     }
 
     /**
-     * @param {any} id
-     * @returns {Promise<null>}
+     * @param {string} id
+     * @returns {Promise<any>}
      */
     async playlistOnce(id) {
         return null
@@ -112,7 +112,8 @@ class APISource {
     }
 }
 
-const youtube = new (class Youtube extends APISource {
+/** @extends {APISource<'Youtube'>} */
+class Youtube extends APISource {
     constructor() {
         super('Youtube')
 
@@ -121,11 +122,21 @@ const youtube = new (class Youtube extends APISource {
         this.id_regex = /^([\w_-]{11})$/
     }
 
+    /**
+     *
+     * @param {string} id
+     * @returns {{id: string} | null}}
+     */
     weak_match(id) {
         if (this.id_regex.exec(id)) return { id }
         return null
     }
 
+    /**
+     *
+     * @param {string} content
+     * @returns {{id:string} | {list:string} | null}}
+     */
     match(content) {
         var url
 
@@ -146,27 +157,35 @@ const youtube = new (class Youtube extends APISource {
             url.pathname == '/watch'
         )
             id = url.searchParams.get('v')
+        // @ts-ignore
         var match = this.weak_match(id)
 
         list = url.searchParams.get('list')
 
         if (!list) return match
-        if (!match) match = {}
-        match.list = list
+        // @ts-ignore
+        if (!match) match = { list }
 
         return match
     }
 
+    /**
+     *
+     * @param {Exclude<ReturnType<Awaited<typeof this.match>>, null>} match
+     * @returns
+     */
     async resolve(match) {
         var track = null,
             list = null
 
+        // @ts-ignore
         if (match.id) track = this.api.get(match.id)
+        // @ts-ignore
         if (match.list) list = this.api.playlist_once(match.list)
         var result = await Promise.allSettled([track, list])
 
-        track = result[0].value
-        list = result[1].value
+        track = result[0].value //? where does this come from?
+        list = result[1].value //? where does this come from?
 
         if (!track && !list) throw match.id ? result[0].reason : result[1].reason
         if (list) {
@@ -196,13 +215,20 @@ const youtube = new (class Youtube extends APISource {
     setCookie(cookie) {
         this.api.set_cookie(cookie)
     }
-})()
+}
+var youtube = new Youtube()
 
-const soundcloud = new (class Soundcloud extends APISource {
+/** @extends {APISource<'Soundcloud'>} */
+class Soundcloud extends APISource {
     constructor() {
         super('Soundcloud')
     }
 
+    /**
+     *
+     * @param {string} content
+     * @returns
+     */
     match(content) {
         var url
 
@@ -237,13 +263,20 @@ const soundcloud = new (class Soundcloud extends APISource {
     async playlistOnce(id, offset, length) {
         return this.api.playlist_once(id, offset, length)
     }
-})()
+}
+var soundcloud = new Soundcloud()
 
-const spotify = new (class Spotify extends APISource {
+/** @extends {APISource<'Spotify'>} */
+class Spotify extends APISource {
     constructor() {
         super('Spotify')
     }
 
+    /**
+     *
+     * @param {string} content
+     * @returns
+     */
     match(content) {
         var url
 
@@ -291,13 +324,20 @@ const spotify = new (class Spotify extends APISource {
     setCookie(cookie) {
         this.api.set_cookie(cookie)
     }
-})()
+}
+var spotify = new Spotify()
 
-const apple = new (class AppleMusic extends APISource {
+/** @extends {APISource<'AppleMusic'>} */
+class AppleMusic extends APISource {
     constructor() {
         super('AppleMusic')
     }
 
+    /**
+     * @override
+     * @param {string} content
+     * @returns
+     */
     match(content) {
         var url
 
@@ -346,14 +386,22 @@ const apple = new (class AppleMusic extends APISource {
     async albumOnce(id, offset, length) {
         return this.api.album_once(id, offset, length)
     }
-})()
+}
+var apple = new AppleMusic()
 
-const file = new (class File extends APISource {
+/** @extends {APISource<'File'>} */
+class File extends APISource {
     constructor() {
         super('File')
     }
 
-    resolve(content) {
+    /**
+     *
+     * @param {string} content
+     * @returns {Promise<ReturnType<typeof this.api.create> | null>}
+     */
+    async resolve(content) {
+        // ! async is an addition to the original code.
         var url
 
         try {
@@ -366,9 +414,18 @@ const file = new (class File extends APISource {
         if (url.protocol == 'file:') return this.api.create(content, true)
         return null
     }
-})()
+}
+var file = new File()
 
 class Source {
+    /**
+     *
+     * @name resolve
+     * @function
+     * @param {string} input
+     * @param {boolean} weak
+     * @returns {null}
+     */
     static resolve(input, weak = true) {
         var sources = [youtube, soundcloud, spotify, apple]
         var match = null

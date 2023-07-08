@@ -141,7 +141,7 @@ class Track {
     /** @type {any | undefined} */
     icons
     /** @type {string | null} */
-    id = null
+    id
     /** @type {string | undefined} */
     title
     /** @type {any | undefined} */
@@ -274,7 +274,7 @@ class TrackPlaylist extends TrackResults {
 
     /**
      *
-     * @param {Track} track
+     * @param {Track<any>} track
      * @returns {this}
      */
     setFirstTrack(track) {

@@ -1,6 +1,8 @@
 // @ts-check
-const { Track, TrackStream, TrackStreams } = require('../Track')
+const { Track, TrackStream, TrackStreams, TrackPlaylist } = require('../Track')
 const SourceError = require('../SourceError')
+// ! This is an a modification of the original File.js file from the project.
+const Source = require('../Source')
 
 class FileStream extends TrackStream {
     /**
@@ -56,7 +58,7 @@ class FileTrack extends Track {
     /**
      *
      * @param {string} url
-     * @param {boolean} isfile
+     * @param {boolean} [isfile]
      */
     constructor(url, isfile = false) {
         super('File')
@@ -91,6 +93,20 @@ class FileTrack extends Track {
     }
 }
 
+class FilePlaylist extends TrackPlaylist {
+    /**
+     *
+     * @param {string} url
+     * @param {boolean} [isfile]
+     * @returns {this}
+     */
+    from(url, isfile) {
+        this.push(new FileTrack(url, isfile))
+
+        return this
+    }
+}
+
 class File {
     // ! This is an a modification of the original File.js file from the project.
     Track = FileTrack
@@ -98,7 +114,39 @@ class File {
     /**
      *
      * @param {string} url
-     * @param {boolean} isfile
+     * @returns {Promise<FileTrack | null>}
+     */
+    async get(url) {
+        return Source.File.resolve(url)
+    }
+
+    /**
+     *
+     * @param {string} url
+     * @returns {Promise<FileStream | null>}
+     */
+    async get_streams(url) {
+        const resolved = await Source.File.resolve(url)
+        if (resolved) return new FileStream(resolved.id, resolved.isLocalFile)
+        return null
+    }
+
+    /**
+     *
+     * @param {string} url
+     * @param {number} [length]
+     * @returns {Promise<FilePlaylist>}
+     */
+    async playlist(url, length) {
+        const track = await this.get(url)
+        if (!track) return new FilePlaylist()
+        return new FilePlaylist().setFirstTrack(track)
+    }
+
+    /**
+     *
+     * @param {string} url
+     * @param {boolean} [isfile]
      * @returns {FileTrack}
      */
     create(url, isfile) {

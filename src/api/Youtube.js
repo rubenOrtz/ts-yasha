@@ -227,6 +227,7 @@ const api = new (class YoutubeAPI {
     Track = YoutubeTrack
     Results = YoutubeResults
     Playlist = YoutubePlaylist
+    Music = music
 
     constructor() {
         this.innertube_client = {
@@ -242,9 +243,18 @@ const api = new (class YoutubeAPI {
         this.sapisid = ''
     }
 
+    /**
+     *
+     * @param {string} path
+     * @param {{[key:string]:any}} [body]
+     * @param {string} [query]
+     * @param {string} [origin]
+     * @returns {Promise<{[key:string]:any}>} //TODO: type this
+     */
     async api_request(path, body = {}, query = '', origin = 'www') {
         /* youtube v1 api */
         var time = Date.now()
+        /** @type {{[key:string]:any}} */
         var options = { headers: {} }
 
         body.context = { client: { ...this.innertube_client } }
@@ -279,6 +289,7 @@ const api = new (class YoutubeAPI {
             `https://${origin}.youtube.com/youtubei/v1/${path}?key=${this.innertube_key}${query}&prettyPrint=false`,
             options,
         )
+        // @ts-ignore
         var body
 
         try {
@@ -291,21 +302,30 @@ const api = new (class YoutubeAPI {
         if (res.status >= 400 && res.status < 500) throw new SourceError.NOT_FOUND(null, new Error(body))
         if (!res.ok) throw new SourceError.INTERNAL_ERROR(null, new Error(body))
         try {
+            // @ts-ignore
             body = JSON.parse(body)
         } catch (e) {
             throw new SourceError.INVALID_RESPONSE(null, e)
         }
 
+        // @ts-ignore
         return body
     }
 
+    /**
+     *
+     * @param {string} id
+     * @returns {Promise<YoutubeTrack>}
+     */
     async get(id) {
         var start = Date.now()
         var responses = [this.api_request('next', { videoId: id }), this.api_request('player', { videoId: id })]
 
         try {
+            // @ts-ignore
             responses = await Promise.all(responses)
         } catch (e) {
+            // @ts-ignore
             if (e.code == SourceError.codes.NOT_FOUND) e.message = 'Video not found'
             throw e
         }
@@ -314,12 +334,15 @@ const api = new (class YoutubeAPI {
         var player_response = responses[1]
 
         if (!response || !player_response) throw new SourceError.INTERNAL_ERROR(null, new Error('Missing data'))
+        // @ts-ignore
         check_playable(player_response.playabilityStatus)
 
+        // @ts-ignore
         var video_details = player_response.videoDetails
 
         try {
             var author = get_property(
+                // @ts-ignore
                 response.contents.twoColumnWatchNextResults.results.results.contents,
                 'videoSecondaryInfoRenderer',
             ).owner.videoOwnerRenderer
@@ -340,6 +363,7 @@ const api = new (class YoutubeAPI {
         var player_response = await this.api_request('player', { videoId: id })
 
         if (!player_response) throw new SourceError.INTERNAL_ERROR(null, new Error('Missing data'))
+        // @ts-ignore
         check_playable(player_response.playabilityStatus)
 
         try {
@@ -375,7 +399,7 @@ const api = new (class YoutubeAPI {
      *
      * @param {string} id
      * @param {number} [limit]
-     * @returns {Promise<YoutubePlaylist[]>}
+     * @returns {Promise<YoutubePlaylist>}
      */
     async playlist(id, limit) {
         var list = null
@@ -389,6 +413,7 @@ const api = new (class YoutubeAPI {
             offset = result.next_offset
         } while (offset && (!limit || list.length < limit))
 
+        // @ts-ignore
         return list
     }
 
