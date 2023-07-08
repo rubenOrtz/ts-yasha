@@ -463,7 +463,6 @@ var api = new (class SoundcloudAPI {
     /**
      * @param {string} id
      * @returns {Promise<SoundcloudTrack|SoundcloudPlaylist|null>}
-     * @private
      */
     async resolve_shortlink(id) {
         var res, body, location, url
@@ -582,7 +581,6 @@ var api = new (class SoundcloudAPI {
      * @param {number} [offset]
      * @param {number} [limit]
      * @returns {Promise<SoundcloudPlaylist|null>}
-     * @private
      */
     async playlist_once(id, offset = 0, limit = 50) {
         this.check_valid_id(id)

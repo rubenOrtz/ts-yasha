@@ -22,7 +22,10 @@ declare class FileStream extends TrackStream {
     private is_file;
     equals(other: FileStream): boolean;
 }
-declare class FilePlaylist extends TrackPlaylist {
+declare class FilePlaylist extends TrackPlaylist<any> {
+    constructor(arrayLength?: number | undefined);
+    constructor(arrayLength: number);
+    constructor(...items: any[]);
     from(url: string, isfile?: boolean | undefined): this;
 }
 import { Track } from "../Track";

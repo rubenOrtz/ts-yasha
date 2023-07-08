@@ -1,18 +1,18 @@
 const SourceError = require('./SourceError')
 
 /**
- * @template T extends 'Soundcloud' | 'Spotify' | 'Youtube'
+ * @template T extends 'AppleMusic' | 'File' | 'Soundcloud' | 'Spotify' | 'Youtube'
  */
 class APISource {
     /** @type {T} */
     name
-    /** @type {T extends 'File' ? import('./api/File') : T extends 'Soundcloud' ? import('./api/Soundcloud') : T extends 'Spotify' ? import('./api/Spotify') : import('./api/Youtube')} */
+    /** @type {T extends 'AppleMusic' ? import('./api/AppleMusic') : T extends 'File' ? import('./api/File') : T extends 'Soundcloud' ? import('./api/Soundcloud') : T extends 'Spotify' ? import('./api/Spotify') : import('./api/Youtube')} */
     api
-    /** @type {T extends 'File' ? undefined : T extends 'Soundcloud' ? typeof import('./api/Soundcloud').Track : T extends 'Spotify' ? typeof import('./api/Spotify').Track : typeof import('./api/Youtube').Track} */
+    /** @type {T extends 'AppleMusic' ? import('./api/AppleMusic').Track : T extends 'File' ? undefined : T extends 'Soundcloud' ? typeof import('./api/Soundcloud').Track : T extends 'Spotify' ? typeof import('./api/Spotify').Track : typeof import('./api/Youtube').Track} */
     Track
-    /** @type {T extends 'File' ? undefined : T extends 'Soundcloud' ? typeof import('./api/Soundcloud').Results : T extends 'Spotify' ? typeof import('./api/Spotify').Results : typeof import('./api/Youtube').Results}*/
+    /** @type {T extends 'AppleMusic' ? import('./api/AppleMusic').Results : T extends 'File' ? undefined : T extends 'Soundcloud' ? typeof import('./api/Soundcloud').Results : T extends 'Spotify' ? typeof import('./api/Spotify').Results : typeof import('./api/Youtube').Results}*/
     Results
-    /** @type {T extends 'File' ? undefined : T extends 'Soundcloud' ? typeof import('./api/Soundcloud').Playlist : T extends 'Spotify' ? typeof import('./api/Spotify').Playlist : typeof import('./api/Youtube').Playlist}*/
+    /** @type {T extends 'AppleMusic' ? import('./api/AppleMusic').Playlist : T extends 'File' ? undefined : T extends 'Soundcloud' ? typeof import('./api/Soundcloud').Playlist : T extends 'Spotify' ? typeof import('./api/Spotify').Playlist : typeof import('./api/Youtube').Playlist}*/
     Playlist
 
     /**
@@ -172,7 +172,7 @@ class Youtube extends APISource {
     /**
      *
      * @param {Exclude<ReturnType<Awaited<typeof this.match>>, null>} match
-     * @returns
+     * @returns {Promise<import('./api/Youtube').Track | import('./api/Youtube').Playlist>}
      */
     async resolve(match) {
         var track = null,
@@ -184,9 +184,12 @@ class Youtube extends APISource {
         if (match.list) list = this.api.playlist_once(match.list)
         var result = await Promise.allSettled([track, list])
 
+        // @ts-ignore
         track = result[0].value //? where does this come from?
+        // @ts-ignore
         list = result[1].value //? where does this come from?
-
+        
+        // @ts-ignore
         if (!track && !list) throw match.id ? result[0].reason : result[1].reason
         if (list) {
             if (track) list.setFirstTrack(track)
@@ -196,6 +199,11 @@ class Youtube extends APISource {
         return track
     }
 
+    /**
+     * 
+     * @param {*} match 
+     * @returns {Promise<null | import('./api/Youtube').Track | import('./api/Youtube').Playlist>}
+     */
     async weak_resolve(match) {
         try {
             return this.resolve(match)
@@ -204,14 +212,34 @@ class Youtube extends APISource {
         }
     }
 
+    /**
+     * 
+     * @override
+     * @param {unknown} query 
+     * @param {unknown} [continuation] 
+     * @returns {Promise<import('./api/Youtube').Results>}
+     */
+    // @ts-ignore
     async search(query, continuation) {
         return this.api.search(query, continuation)
     }
 
+    /**
+     * 
+     * @param {string} id 
+     * @param {number} [start] 
+     * @returns {Promise<import('./api/Youtube').Playlist>}
+     */
+    // @ts-ignore
     async playlistOnce(id, start) {
         return this.api.playlist_once(id, start)
     }
 
+    /**
+     * 
+     * @param {string} cookie 
+     * @returns {void}
+     */
     setCookie(cookie) {
         this.api.set_cookie(cookie)
     }
@@ -227,7 +255,7 @@ class Soundcloud extends APISource {
     /**
      *
      * @param {string} content
-     * @returns
+     * @returns {null | {soundcloud: string} | {shortlink: string}}
      */
     match(content) {
         var url
@@ -246,20 +274,43 @@ class Soundcloud extends APISource {
         return null
     }
 
+    /**
+     * 
+     * @param {ReturnType<typeof this.match>} match 
+     * @returns {Promise<import('./api/Soundcloud').Track | import('./api/Soundcloud').Playlist | null>}
+     */
     async resolve(match) {
         try {
+            // @ts-ignore
             if (match.shortlink) return await this.api.resolve_shortlink(match.shortlink)
+            // @ts-ignore
             return await this.api.resolve(match.soundcloud)
         } catch (e) {
+            // @ts-ignore
             if (e.code == SourceError.codes.NOT_A_TRACK) return null
             throw e
         }
     }
 
+    /**
+     * 
+     * @param {string} query 
+     * @param {number} offset 
+     * @param {number} [length] 
+     * @returns {Promise<import('./api/Soundcloud').Results>}
+     */
+    // @ts-ignore
     async search(query, offset, length) {
         return this.api.search(query, offset, length)
     }
 
+    /**
+     * 
+     * @param {string} id 
+     * @param {number} [offset] 
+     * @param {number} [length] 
+     * @returns {Promise<import('./api/Soundcloud').Playlist | null>}
+     */
     async playlistOnce(id, offset, length) {
         return this.api.playlist_once(id, offset, length)
     }
@@ -275,7 +326,7 @@ class Spotify extends APISource {
     /**
      *
      * @param {string} content
-     * @returns
+     * @returns {null | {track: string} | {album: string} | {playlist: string}}
      */
     match(content) {
         var url
@@ -303,24 +354,59 @@ class Spotify extends APISource {
         return null
     }
 
+    /**
+     * 
+     * @param {ReturnType<typeof this.match>} match 
+     * @returns {Promise<import('./api/Spotify').Track | import('./api/Spotify').Playlist | undefined>}
+     */
     async resolve(match) {
+        // @ts-ignore
         if (match.track) return this.api.get(match.track)
+        // @ts-ignore
         if (match.playlist) return this.api.playlist_once(match.playlist)
+        // @ts-ignore
         if (match.album) return this.api.album_once(match.album)
     }
 
+    /**
+     * 
+     * @param {string} query 
+     * @param {number} [offset] 
+     * @param {number} [length] 
+     * @returns {Promise<import('./api/Spotify').Results>}
+     */
     async search(query, offset, length) {
         return this.api.search(query, offset, length)
     }
 
+    /**
+     * 
+     * @param {string} id 
+     * @param {number} [offset] 
+     * @param {number} [length] 
+     * @returns {Promise<import('./api/Spotify').Playlist>}
+     */
+    // @ts-ignore
     async playlistOnce(id, offset, length) {
         return this.api.playlist_once(id, offset, length)
     }
 
+    /**
+     * 
+     * @param {string} id 
+     * @param {number} [offset] 
+     * @param {number} [length] 
+     * @returns {Promise<import('./api/Spotify').Playlist>}
+     */
     async albumOnce(id, offset, length) {
         return this.api.album_once(id, offset, length)
     }
 
+    /**
+     * 
+     * @param {string} cookie
+     * @returns {void} 
+     */
     setCookie(cookie) {
         this.api.set_cookie(cookie)
     }
@@ -336,7 +422,7 @@ class AppleMusic extends APISource {
     /**
      * @override
      * @param {string} content
-     * @returns
+     * @returns {null | {track: string} | {album: string} | {playlist: string}}
      */
     match(content) {
         var url
@@ -369,20 +455,49 @@ class AppleMusic extends APISource {
         return null
     }
 
+    /**
+     * 
+     * @param {ReturnType<typeof this.match>} match 
+     * @returns {Promise<import('./api/AppleMusic').Track | import('./api/AppleMusic').Playlist | undefined>}
+     */
     async resolve(match) {
+        // @ts-ignore
         if (match.track) return this.api.get(match.track)
+        // @ts-ignore
         if (match.playlist) return this.api.playlist_once(match.playlist)
+        // @ts-ignore
         if (match.album) return this.api.album_once(match.album)
     }
 
+    /**
+     * 
+     * @param {string} query 
+     * @param {number} [offset] 
+     * @param {number} [length] 
+     * @returns 
+     */
     async search(query, offset, length) {
         return this.api.search(query, offset, length)
     }
 
+    /**
+     * 
+     * @param {string} id 
+     * @param {number} [offset] 
+     * @param {number} [length] 
+     * @returns 
+     */
     async playlistOnce(id, offset, length) {
         return this.api.playlist_once(id, offset, length)
     }
 
+    /**
+     * 
+     * @param {string} id 
+     * @param {number} [offset] 
+     * @param {number} [length] 
+     * @returns {Promise<import('./api/AppleMusic').Playlist>}
+     */
     async albumOnce(id, offset, length) {
         return this.api.album_once(id, offset, length)
     }
@@ -423,15 +538,16 @@ class Source {
      * @name resolve
      * @function
      * @param {string} input
-     * @param {boolean} weak
-     * @returns {null}
+     * @returns {null | Promise<ReturnType<typeof apple.resolve> | ReturnType<typeof soundcloud.resolve> | ReturnType<typeof soundcloud.resolve> | ReturnType<typeof youtube.resolve> | ReturnType<typeof file.api.create>>}
      */
     static resolve(input, weak = true) {
         var sources = [youtube, soundcloud, spotify, apple]
         var match = null
 
+        // @ts-ignore
         for (var source of sources) if ((match = source.match(input))) return source.resolve(match)
         if (!weak) return null
+        // @ts-ignore
         for (var source of sources) if ((match = source.weak_match(input))) return source.weak_resolve(match)
         return null
     }

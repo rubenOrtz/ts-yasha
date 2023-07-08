@@ -140,7 +140,7 @@ class Track {
     author
     /** @type {any | undefined} */
     icons
-    /** @type {string | null} */
+    /** @type {string | null | undefined} */
     id
     /** @type {string | undefined} */
     title
@@ -251,12 +251,15 @@ class TrackResults extends Array {
     }
 }
 
+/**
+ * @template T extends 'Spotify' | 'Soundcloud' | 'File' | 'AppleMusic' | 'Youtube'
+ */
 class TrackPlaylist extends TrackResults {
     /** @type {string | undefined} */
     title
     /** @type {string | undefined} */
     description
-    /** @type {Track | undefined} */
+    /** @type {Track<T> | undefined} */
     firstTrack
 
     /**

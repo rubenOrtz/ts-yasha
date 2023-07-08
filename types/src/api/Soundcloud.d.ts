@@ -51,7 +51,10 @@ declare class SoundcloudResults extends TrackResults {
     set_continuation(query: any, start: number): void;
     next(): Promise<SoundcloudResults>;
 }
-declare class SoundcloudPlaylist extends TrackPlaylist {
+declare class SoundcloudPlaylist extends TrackPlaylist<any> {
+    constructor(arrayLength?: number | undefined);
+    constructor(arrayLength: number);
+    constructor(...items: any[]);
     id: string | undefined;
     start: number | undefined;
     private permalink_url;

@@ -1,6 +1,6 @@
 export = Source;
 declare class Source {
-    static resolve(input: string, weak?: boolean): null;
+    static resolve(input: string, weak?: boolean): null | Promise<ReturnType<typeof apple.resolve> | ReturnType<typeof soundcloud.resolve> | ReturnType<typeof soundcloud.resolve> | ReturnType<typeof youtube.resolve> | ReturnType<typeof file.api.create>>;
 }
 declare namespace Source {
     export { SourceError as Error };
@@ -10,12 +10,37 @@ declare namespace Source {
     export { apple as AppleMusic };
     export { file as File };
 }
-import SourceError = require("./SourceError");
-declare var youtube: Youtube;
-declare var soundcloud: Soundcloud;
-declare var spotify: Spotify;
 declare var apple: AppleMusic;
+declare var soundcloud: Soundcloud;
+declare var youtube: Youtube;
 declare var file: File;
+import SourceError = require("./SourceError");
+declare var spotify: Spotify;
+declare class AppleMusic extends APISource<"AppleMusic"> {
+    constructor();
+    override match(content: string): null | {
+        track: string;
+    } | {
+        album: string;
+    } | {
+        playlist: string;
+    };
+    resolve(match: ReturnType<typeof this.match>): Promise<import('./api/AppleMusic').Track | import('./api/AppleMusic').Playlist | undefined>;
+    search(query: string, offset?: number | undefined, length?: number | undefined): Promise<import("./api/AppleMusic").Results>;
+    playlistOnce(id: string, offset?: number | undefined, length?: number | undefined): Promise<import("./api/AppleMusic").Playlist>;
+    albumOnce(id: string, offset?: number | undefined, length?: number | undefined): Promise<import('./api/AppleMusic').Playlist>;
+}
+declare class Soundcloud extends APISource<"Soundcloud"> {
+    constructor();
+    match(content: string): null | {
+        soundcloud: string;
+    } | {
+        shortlink: string;
+    };
+    resolve(match: ReturnType<typeof this.match>): Promise<import('./api/Soundcloud').Track | import('./api/Soundcloud').Playlist | null>;
+    search(query: string, offset: number, length?: number | undefined): Promise<import('./api/Soundcloud').Results>;
+    playlistOnce(id: string, offset?: number | undefined, length?: number | undefined): Promise<import('./api/Soundcloud').Playlist | null>;
+}
 declare class Youtube extends APISource<"Youtube"> {
     constructor();
     Music: {
@@ -138,74 +163,159 @@ declare class Youtube extends APISource<"Youtube"> {
     } | {
         list: string;
     } | null;
-    resolve(match: Exclude<ReturnType<Awaited<typeof this.match>>, null>): Promise<any>;
-    weak_resolve(match: any): Promise<any>;
-    search(query: any, continuation: any): Promise<import("./api/Youtube").Results>;
-    playlistOnce(id: any, start: any): Promise<import("./api/Youtube").Playlist>;
-    setCookie(cookie: any): void;
-}
-declare class Soundcloud extends APISource<"Soundcloud"> {
-    constructor();
-    match(content: string): {
-        soundcloud: string;
-        shortlink?: undefined;
-    } | {
-        shortlink: string;
-        soundcloud?: undefined;
-    } | null;
-    resolve(match: any): Promise<import("./api/Soundcloud").Track | import("./api/Soundcloud").Playlist | null>;
-    search(query: any, offset: any, length: any): Promise<import("./api/Soundcloud").Results>;
-    playlistOnce(id: any, offset: any, length: any): Promise<import("./api/Soundcloud").Playlist | null>;
-}
-declare class Spotify extends APISource<"Spotify"> {
-    constructor();
-    match(content: string): {
-        track: string;
-        album?: undefined;
-        playlist?: undefined;
-    } | {
-        album: string;
-        track?: undefined;
-        playlist?: undefined;
-    } | {
-        playlist: string;
-        track?: undefined;
-        album?: undefined;
-    } | null;
-    resolve(match: any): Promise<import("./api/Spotify").Track | import("./api/Spotify").Playlist | undefined>;
-    search(query: any, offset: any, length: any): Promise<import("./api/Spotify").Results>;
-    playlistOnce(id: any, offset: any, length: any): Promise<import("./api/Spotify").Playlist>;
-    albumOnce(id: any, offset: any, length: any): Promise<import("./api/Spotify").Playlist>;
-    setCookie(cookie: any): void;
-}
-declare class AppleMusic extends APISource<"AppleMusic"> {
-    constructor();
-    override match(content: string): {
-        track: string;
-        playlist?: undefined;
-        album?: undefined;
-    } | {
-        playlist: string;
-        track?: undefined;
-        album?: undefined;
-    } | {
-        album: string;
-        track?: undefined;
-        playlist?: undefined;
-    } | null;
-    resolve(match: any): Promise<any>;
-    search(query: any, offset: any, length: any): Promise<import("./api/Youtube").Results>;
-    playlistOnce(id: any, offset: any, length: any): Promise<import("./api/Youtube").Playlist>;
-    albumOnce(id: any, offset: any, length: any): Promise<any>;
+    resolve(match: Exclude<ReturnType<Awaited<typeof this.match>>, null>): Promise<import('./api/Youtube').Track | import('./api/Youtube').Playlist>;
+    weak_resolve(match: any): Promise<null | import('./api/Youtube').Track | import('./api/Youtube').Playlist>;
+    override search(query: unknown, continuation?: unknown): Promise<import('./api/Youtube').Results>;
+    playlistOnce(id: string, start?: number | undefined): Promise<import('./api/Youtube').Playlist>;
+    setCookie(cookie: string): void;
 }
 declare class File extends APISource<"File"> {
     constructor();
     resolve(content: string): Promise<ReturnType<typeof this.api.create> | null>;
 }
+declare class Spotify extends APISource<"Spotify"> {
+    constructor();
+    match(content: string): null | {
+        track: string;
+    } | {
+        album: string;
+    } | {
+        playlist: string;
+    };
+    resolve(match: ReturnType<typeof this.match>): Promise<import('./api/Spotify').Track | import('./api/Spotify').Playlist | undefined>;
+    search(query: string, offset?: number | undefined, length?: number | undefined): Promise<import('./api/Spotify').Results>;
+    playlistOnce(id: string, offset?: number | undefined, length?: number | undefined): Promise<import('./api/Spotify').Playlist>;
+    albumOnce(id: string, offset?: number | undefined, length?: number | undefined): Promise<import('./api/Spotify').Playlist>;
+    setCookie(cookie: string): void;
+}
 declare class APISource<T> {
     constructor(api: T);
     name: T;
-    api: T extends 'File' ? {
+    api: T extends 'AppleMusic' ? {
+        Track: typeof import("./api/AppleMusic").Track;
+        Results: typeof import("./api/AppleMusic").Results;
+        Playlist: typeof import("./api/AppleMusic").Playlist;
+        token: string | null;
+        reloading: Promise<void> | null;
+        needs_reload: boolean;
+        reload(force?: boolean | undefined): Promise<void>;
+        load(): Promise<void>;
+        prefetch(): Promise<void> | undefined;
+        api_request(path: string, query?: {
+            [key: string]: any;
+        } | undefined, options?: {
+            [key: string]: any;
+            headers?: {
+                [key: string]: any;
+                authorization?: string | undefined;
+                origin?: string | undefined;
+            } | undefined;
+        } | undefined): Promise<any>;
+        check_valid_id(id: string): void;
+        get(id: string): Promise<import("./api/AppleMusic").Track>;
+        get_streams(id: string): Promise<Promise<{
+            [n: number]: any;
+            from(start: any, playerResponse: any): any;
+            expire: any;
+            expired(): boolean;
+            extract_streams(streams: any, adaptive: any): void;
+            set(volume: number, live: any, time: number): void;
+            volume: number | undefined;
+            live: any;
+            time: number | undefined;
+            maybeExpired(): boolean;
+            length: number;
+            toString(): string;
+            toLocaleString(): string;
+            pop(): any;
+            push(...items: any[]): number;
+            concat(...items: ConcatArray<any>[]): any[];
+            concat(...items: any[]): any[];
+            join(separator?: string | undefined): string;
+            reverse(): any[];
+            shift(): any;
+            slice(start?: number | undefined, end?: number | undefined): any[];
+            sort(compareFn?: ((a: any, b: any) => number) | undefined): any;
+            splice(start: number, deleteCount?: number | undefined): any[];
+            splice(start: number, deleteCount: number, ...items: any[]): any[];
+            unshift(...items: any[]): number;
+            indexOf(searchElement: any, fromIndex?: number | undefined): number;
+            lastIndexOf(searchElement: any, fromIndex?: number | undefined): number;
+            every<S extends any>(predicate: (value: any, index: number, array: any[]) => value is S, thisArg?: any): this is S[];
+            every(predicate: (value: any, index: number, array: any[]) => unknown, thisArg?: any): boolean;
+            some(predicate: (value: any, index: number, array: any[]) => unknown, thisArg?: any): boolean;
+            forEach(callbackfn: (value: any, index: number, array: any[]) => void, thisArg?: any): void;
+            map<U>(callbackfn: (value: any, index: number, array: any[]) => U, thisArg?: any): U[];
+            filter<S_1 extends any>(predicate: (value: any, index: number, array: any[]) => value is S_1, thisArg?: any): S_1[];
+            filter(predicate: (value: any, index: number, array: any[]) => unknown, thisArg?: any): any[];
+            reduce(callbackfn: (previousValue: any, currentValue: any, currentIndex: number, array: any[]) => any): any;
+            reduce(callbackfn: (previousValue: any, currentValue: any, currentIndex: number, array: any[]) => any, initialValue: any): any;
+            reduce<U_1>(callbackfn: (previousValue: U_1, currentValue: any, currentIndex: number, array: any[]) => U_1, initialValue: U_1): U_1;
+            reduceRight(callbackfn: (previousValue: any, currentValue: any, currentIndex: number, array: any[]) => any): any;
+            reduceRight(callbackfn: (previousValue: any, currentValue: any, currentIndex: number, array: any[]) => any, initialValue: any): any;
+            reduceRight<U_2>(callbackfn: (previousValue: U_2, currentValue: any, currentIndex: number, array: any[]) => U_2, initialValue: U_2): U_2;
+            find<S_2 extends any>(predicate: (value: any, index: number, obj: any[]) => value is S_2, thisArg?: any): S_2 | undefined;
+            find(predicate: (value: any, index: number, obj: any[]) => unknown, thisArg?: any): any;
+            findIndex(predicate: (value: any, index: number, obj: any[]) => unknown, thisArg?: any): number;
+            fill(value: any, start?: number | undefined, end?: number | undefined): any;
+            copyWithin(target: number, start?: number | undefined, end?: number | undefined): any;
+            entries(): IterableIterator<[number, any]>;
+            keys(): IterableIterator<number>;
+            values(): IterableIterator<any>;
+            includes(searchElement: any, fromIndex?: number | undefined): boolean;
+            flatMap<U_3, This = undefined>(callback: (this: This, value: any, index: number, array: any[]) => U_3 | readonly U_3[], thisArg?: This | undefined): U_3[];
+            flat<A, D extends number = 1>(this: A, depth?: D | undefined): FlatArray<A, D>[];
+            [Symbol.iterator](): IterableIterator<any>;
+            readonly [Symbol.unscopables]: {
+                [x: number]: boolean | undefined;
+                length?: boolean | undefined;
+                toString?: boolean | undefined;
+                toLocaleString?: boolean | undefined;
+                pop?: boolean | undefined;
+                push?: boolean | undefined;
+                concat?: boolean | undefined;
+                join?: boolean | undefined;
+                reverse?: boolean | undefined;
+                shift?: boolean | undefined;
+                slice?: boolean | undefined;
+                sort?: boolean | undefined;
+                splice?: boolean | undefined;
+                unshift?: boolean | undefined;
+                indexOf?: boolean | undefined;
+                lastIndexOf?: boolean | undefined;
+                every?: boolean | undefined;
+                some?: boolean | undefined;
+                forEach?: boolean | undefined;
+                map?: boolean | undefined;
+                filter?: boolean | undefined;
+                reduce?: boolean | undefined;
+                reduceRight?: boolean | undefined;
+                find?: boolean | undefined;
+                findIndex?: boolean | undefined;
+                fill?: boolean | undefined;
+                copyWithin?: boolean | undefined;
+                entries?: boolean | undefined;
+                keys?: boolean | undefined;
+                values?: boolean | undefined;
+                includes?: boolean | undefined;
+                flatMap?: boolean | undefined;
+                flat?: boolean | undefined;
+                [Symbol.iterator]?: boolean | undefined;
+                readonly [Symbol.unscopables]?: boolean | undefined;
+                at?: boolean | undefined;
+            };
+            at(index: number): any;
+        }>>;
+        get_next(url: string, param: any): number;
+        search(query: any, offset?: number | undefined, limit?: number | undefined): Promise<import("./api/AppleMusic").Results>;
+        list_once(type: string, id: string, offset?: number | undefined, limit?: number | undefined): Promise<import("./api/AppleMusic").Playlist>;
+        check_valid_playlist_id(id: string): void;
+        playlist_once(id: string, offset?: number | undefined, length?: number | undefined): Promise<import("./api/AppleMusic").Playlist>;
+        album_once(id: string, offset?: number | undefined, length?: number | undefined): Promise<import("./api/AppleMusic").Playlist>;
+        list(type: string, id: string, limit?: number | undefined): Promise<import("./api/AppleMusic").Playlist>;
+        playlist(id: string, length?: number | undefined): Promise<import("./api/AppleMusic").Playlist>;
+        album(id: string, length?: number | undefined): Promise<import("./api/AppleMusic").Playlist>;
+    } : T extends 'File' ? {
         Track: typeof import("./api/File").Track;
         get(url: string): Promise<import("./api/File").Track | null>;
         get_streams(url: string): Promise<{
@@ -252,20 +362,20 @@ declare class APISource<T> {
             unshift(...items: any[]): number;
             indexOf(searchElement: any, fromIndex?: number | undefined): number;
             lastIndexOf(searchElement: any, fromIndex?: number | undefined): number;
-            every<S extends any>(predicate: (value: any, index: number, array: any[]) => value is S, thisArg?: any): this is S[];
+            every<S_3 extends any>(predicate: (value: any, index: number, array: any[]) => value is S_3, thisArg?: any): this is S_3[];
             every(predicate: (value: any, index: number, array: any[]) => unknown, thisArg?: any): boolean;
             some(predicate: (value: any, index: number, array: any[]) => unknown, thisArg?: any): boolean;
             forEach(callbackfn: (value: any, index: number, array: any[]) => void, thisArg?: any): void;
-            map<U>(callbackfn: (value: any, index: number, array: any[]) => U, thisArg?: any): U[];
-            filter<S_1 extends any>(predicate: (value: any, index: number, array: any[]) => value is S_1, thisArg?: any): S_1[];
+            map<U_4>(callbackfn: (value: any, index: number, array: any[]) => U_4, thisArg?: any): U_4[];
+            filter<S_4 extends any>(predicate: (value: any, index: number, array: any[]) => value is S_4, thisArg?: any): S_4[];
             filter(predicate: (value: any, index: number, array: any[]) => unknown, thisArg?: any): any[];
             reduce(callbackfn: (previousValue: any, currentValue: any, currentIndex: number, array: any[]) => any): any;
             reduce(callbackfn: (previousValue: any, currentValue: any, currentIndex: number, array: any[]) => any, initialValue: any): any;
-            reduce<U_1>(callbackfn: (previousValue: U_1, currentValue: any, currentIndex: number, array: any[]) => U_1, initialValue: U_1): U_1;
+            reduce<U_5>(callbackfn: (previousValue: U_5, currentValue: any, currentIndex: number, array: any[]) => U_5, initialValue: U_5): U_5;
             reduceRight(callbackfn: (previousValue: any, currentValue: any, currentIndex: number, array: any[]) => any): any;
             reduceRight(callbackfn: (previousValue: any, currentValue: any, currentIndex: number, array: any[]) => any, initialValue: any): any;
-            reduceRight<U_2>(callbackfn: (previousValue: U_2, currentValue: any, currentIndex: number, array: any[]) => U_2, initialValue: U_2): U_2;
-            find<S_2 extends any>(predicate: (value: any, index: number, obj: any[]) => value is S_2, thisArg?: any): S_2 | undefined;
+            reduceRight<U_6>(callbackfn: (previousValue: U_6, currentValue: any, currentIndex: number, array: any[]) => U_6, initialValue: U_6): U_6;
+            find<S_5 extends any>(predicate: (value: any, index: number, obj: any[]) => value is S_5, thisArg?: any): S_5 | undefined;
             find(predicate: (value: any, index: number, obj: any[]) => unknown, thisArg?: any): any;
             findIndex(predicate: (value: any, index: number, obj: any[]) => unknown, thisArg?: any): number;
             fill(value: any, start?: number | undefined, end?: number | undefined): any;
@@ -274,8 +384,8 @@ declare class APISource<T> {
             keys(): IterableIterator<number>;
             values(): IterableIterator<any>;
             includes(searchElement: any, fromIndex?: number | undefined): boolean;
-            flatMap<U_3, This = undefined>(callback: (this: This, value: any, index: number, array: any[]) => U_3 | readonly U_3[], thisArg?: This | undefined): U_3[];
-            flat<A, D extends number = 1>(this: A, depth?: D | undefined): FlatArray<A, D>[];
+            flatMap<U_7, This_1 = undefined>(callback: (this: This_1, value: any, index: number, array: any[]) => U_7 | readonly U_7[], thisArg?: This_1 | undefined): U_7[];
+            flat<A_1, D_1 extends number = 1>(this: A_1, depth?: D_1 | undefined): FlatArray<A_1, D_1>[];
             [Symbol.iterator](): IterableIterator<any>;
             readonly [Symbol.unscopables]: {
                 [x: number]: boolean | undefined;
@@ -390,20 +500,20 @@ declare class APISource<T> {
             unshift(...items: any[]): number;
             indexOf(searchElement: any, fromIndex?: number | undefined): number;
             lastIndexOf(searchElement: any, fromIndex?: number | undefined): number;
-            every<S_3 extends any>(predicate: (value: any, index: number, array: any[]) => value is S_3, thisArg?: any): this is S_3[];
+            every<S_6 extends any>(predicate: (value: any, index: number, array: any[]) => value is S_6, thisArg?: any): this is S_6[];
             every(predicate: (value: any, index: number, array: any[]) => unknown, thisArg?: any): boolean;
             some(predicate: (value: any, index: number, array: any[]) => unknown, thisArg?: any): boolean;
             forEach(callbackfn: (value: any, index: number, array: any[]) => void, thisArg?: any): void;
-            map<U_4>(callbackfn: (value: any, index: number, array: any[]) => U_4, thisArg?: any): U_4[];
-            filter<S_4 extends any>(predicate: (value: any, index: number, array: any[]) => value is S_4, thisArg?: any): S_4[];
+            map<U_8>(callbackfn: (value: any, index: number, array: any[]) => U_8, thisArg?: any): U_8[];
+            filter<S_7 extends any>(predicate: (value: any, index: number, array: any[]) => value is S_7, thisArg?: any): S_7[];
             filter(predicate: (value: any, index: number, array: any[]) => unknown, thisArg?: any): any[];
             reduce(callbackfn: (previousValue: any, currentValue: any, currentIndex: number, array: any[]) => any): any;
             reduce(callbackfn: (previousValue: any, currentValue: any, currentIndex: number, array: any[]) => any, initialValue: any): any;
-            reduce<U_5>(callbackfn: (previousValue: U_5, currentValue: any, currentIndex: number, array: any[]) => U_5, initialValue: U_5): U_5;
+            reduce<U_9>(callbackfn: (previousValue: U_9, currentValue: any, currentIndex: number, array: any[]) => U_9, initialValue: U_9): U_9;
             reduceRight(callbackfn: (previousValue: any, currentValue: any, currentIndex: number, array: any[]) => any): any;
             reduceRight(callbackfn: (previousValue: any, currentValue: any, currentIndex: number, array: any[]) => any, initialValue: any): any;
-            reduceRight<U_6>(callbackfn: (previousValue: U_6, currentValue: any, currentIndex: number, array: any[]) => U_6, initialValue: U_6): U_6;
-            find<S_5 extends any>(predicate: (value: any, index: number, obj: any[]) => value is S_5, thisArg?: any): S_5 | undefined;
+            reduceRight<U_10>(callbackfn: (previousValue: U_10, currentValue: any, currentIndex: number, array: any[]) => U_10, initialValue: U_10): U_10;
+            find<S_8 extends any>(predicate: (value: any, index: number, obj: any[]) => value is S_8, thisArg?: any): S_8 | undefined;
             find(predicate: (value: any, index: number, obj: any[]) => unknown, thisArg?: any): any;
             findIndex(predicate: (value: any, index: number, obj: any[]) => unknown, thisArg?: any): number;
             fill(value: any, start?: number | undefined, end?: number | undefined): any;
@@ -412,8 +522,8 @@ declare class APISource<T> {
             keys(): IterableIterator<number>;
             values(): IterableIterator<any>;
             includes(searchElement: any, fromIndex?: number | undefined): boolean;
-            flatMap<U_7, This_1 = undefined>(callback: (this: This_1, value: any, index: number, array: any[]) => U_7 | readonly U_7[], thisArg?: This_1 | undefined): U_7[];
-            flat<A_1, D_1 extends number = 1>(this: A_1, depth?: D_1 | undefined): FlatArray<A_1, D_1>[];
+            flatMap<U_11, This_2 = undefined>(callback: (this: This_2, value: any, index: number, array: any[]) => U_11 | readonly U_11[], thisArg?: This_2 | undefined): U_11[];
+            flat<A_2, D_2 extends number = 1>(this: A_2, depth?: D_2 | undefined): FlatArray<A_2, D_2>[];
             [Symbol.iterator](): IterableIterator<any>;
             readonly [Symbol.unscopables]: {
                 [x: number]: boolean | undefined;
@@ -472,15 +582,107 @@ declare class APISource<T> {
         api_request(path: any, options?: {}): Promise<any>;
         check_valid_id(id: any): void;
         get(id: any): Promise<import("./api/Spotify").Track>;
-        get_streams(id: any): Promise<any>;
+        get_streams(id: any): Promise<{
+            [n: number]: any;
+            from(start: any, playerResponse: any): any;
+            expire: any;
+            expired(): boolean;
+            extract_streams(streams: any, adaptive: any): void;
+            set(volume: number, live: any, time: number): void;
+            volume: number | undefined;
+            live: any;
+            time: number | undefined;
+            maybeExpired(): boolean;
+            length: number;
+            toString(): string;
+            toLocaleString(): string;
+            pop(): any;
+            push(...items: any[]): number;
+            concat(...items: ConcatArray<any>[]): any[];
+            concat(...items: any[]): any[];
+            join(separator?: string | undefined): string;
+            reverse(): any[];
+            shift(): any;
+            slice(start?: number | undefined, end?: number | undefined): any[];
+            sort(compareFn?: ((a: any, b: any) => number) | undefined): any;
+            splice(start: number, deleteCount?: number | undefined): any[];
+            splice(start: number, deleteCount: number, ...items: any[]): any[];
+            unshift(...items: any[]): number;
+            indexOf(searchElement: any, fromIndex?: number | undefined): number;
+            lastIndexOf(searchElement: any, fromIndex?: number | undefined): number;
+            every<S extends any>(predicate: (value: any, index: number, array: any[]) => value is S, thisArg?: any): this is S[];
+            every(predicate: (value: any, index: number, array: any[]) => unknown, thisArg?: any): boolean;
+            some(predicate: (value: any, index: number, array: any[]) => unknown, thisArg?: any): boolean;
+            forEach(callbackfn: (value: any, index: number, array: any[]) => void, thisArg?: any): void;
+            map<U>(callbackfn: (value: any, index: number, array: any[]) => U, thisArg?: any): U[];
+            filter<S_1 extends any>(predicate: (value: any, index: number, array: any[]) => value is S_1, thisArg?: any): S_1[];
+            filter(predicate: (value: any, index: number, array: any[]) => unknown, thisArg?: any): any[];
+            reduce(callbackfn: (previousValue: any, currentValue: any, currentIndex: number, array: any[]) => any): any;
+            reduce(callbackfn: (previousValue: any, currentValue: any, currentIndex: number, array: any[]) => any, initialValue: any): any;
+            reduce<U_1>(callbackfn: (previousValue: U_1, currentValue: any, currentIndex: number, array: any[]) => U_1, initialValue: U_1): U_1;
+            reduceRight(callbackfn: (previousValue: any, currentValue: any, currentIndex: number, array: any[]) => any): any;
+            reduceRight(callbackfn: (previousValue: any, currentValue: any, currentIndex: number, array: any[]) => any, initialValue: any): any;
+            reduceRight<U_2>(callbackfn: (previousValue: U_2, currentValue: any, currentIndex: number, array: any[]) => U_2, initialValue: U_2): U_2;
+            find<S_2 extends any>(predicate: (value: any, index: number, obj: any[]) => value is S_2, thisArg?: any): S_2 | undefined;
+            find(predicate: (value: any, index: number, obj: any[]) => unknown, thisArg?: any): any;
+            findIndex(predicate: (value: any, index: number, obj: any[]) => unknown, thisArg?: any): number;
+            fill(value: any, start?: number | undefined, end?: number | undefined): any;
+            copyWithin(target: number, start?: number | undefined, end?: number | undefined): any;
+            entries(): IterableIterator<[number, any]>;
+            keys(): IterableIterator<number>;
+            values(): IterableIterator<any>;
+            includes(searchElement: any, fromIndex?: number | undefined): boolean;
+            flatMap<U_3, This = undefined>(callback: (this: This, value: any, index: number, array: any[]) => U_3 | readonly U_3[], thisArg?: This | undefined): U_3[];
+            flat<A, D extends number = 1>(this: A, depth?: D | undefined): FlatArray<A, D>[];
+            [Symbol.iterator](): IterableIterator<any>;
+            readonly [Symbol.unscopables]: {
+                [x: number]: boolean | undefined;
+                length?: boolean | undefined;
+                toString?: boolean | undefined;
+                toLocaleString?: boolean | undefined;
+                pop?: boolean | undefined;
+                push?: boolean | undefined;
+                concat?: boolean | undefined;
+                join?: boolean | undefined;
+                reverse?: boolean | undefined;
+                shift?: boolean | undefined;
+                slice?: boolean | undefined;
+                sort?: boolean | undefined;
+                splice?: boolean | undefined;
+                unshift?: boolean | undefined;
+                indexOf?: boolean | undefined;
+                lastIndexOf?: boolean | undefined;
+                every?: boolean | undefined;
+                some?: boolean | undefined;
+                forEach?: boolean | undefined;
+                map?: boolean | undefined;
+                filter?: boolean | undefined;
+                reduce?: boolean | undefined;
+                reduceRight?: boolean | undefined;
+                find?: boolean | undefined;
+                findIndex?: boolean | undefined;
+                fill?: boolean | undefined;
+                copyWithin?: boolean | undefined;
+                entries?: boolean | undefined;
+                keys?: boolean | undefined;
+                values?: boolean | undefined;
+                includes?: boolean | undefined;
+                flatMap?: boolean | undefined;
+                flat?: boolean | undefined;
+                [Symbol.iterator]?: boolean | undefined;
+                readonly [Symbol.unscopables]?: boolean | undefined;
+                at?: boolean | undefined;
+            };
+            at(index: number): any;
+        }>;
         search(query: any, start?: number, length?: number): Promise<import("./api/Spotify").Results>;
         list_once(type: string, id: string, start?: number | undefined, length?: number | undefined): Promise<import("./api/Spotify").Playlist>;
-        playlist_once(id: any, start: number | undefined, length: any): Promise<import("./api/Spotify").Playlist>;
-        album_once(id: any, start: number | undefined, length: any): Promise<import("./api/Spotify").Playlist>;
+        playlist_once(id: string, start?: number | undefined, length?: number | undefined): Promise<import("./api/Spotify").Playlist>;
+        album_once(id: string, start?: number | undefined, length?: number | undefined): Promise<import("./api/Spotify").Playlist>;
         list(type: any, id: string, limit?: number | undefined): Promise<import("./api/Spotify").Playlist>;
         playlist(id: string, length?: number | undefined): Promise<import("./api/Spotify").Playlist>;
-        album(id: any, length: any): Promise<import("./api/Spotify").Playlist>;
-        set_cookie(cookie: any): void;
+        album(id: string, length?: number | undefined): Promise<import("./api/Spotify").Playlist>;
+        set_cookie(cookie: string): void;
     } : {
         Track: typeof import("./api/Youtube").Track;
         Results: typeof import("./api/Youtube").Results;
@@ -530,20 +732,20 @@ declare class APISource<T> {
                 unshift(...items: any[]): number;
                 indexOf(searchElement: any, fromIndex?: number | undefined): number;
                 lastIndexOf(searchElement: any, fromIndex?: number | undefined): number;
-                every<S_6 extends any>(predicate: (value: any, index: number, array: any[]) => value is S_6, thisArg?: any): this is S_6[];
+                every<S_9 extends any>(predicate: (value: any, index: number, array: any[]) => value is S_9, thisArg?: any): this is S_9[];
                 every(predicate: (value: any, index: number, array: any[]) => unknown, thisArg?: any): boolean;
                 some(predicate: (value: any, index: number, array: any[]) => unknown, thisArg?: any): boolean;
                 forEach(callbackfn: (value: any, index: number, array: any[]) => void, thisArg?: any): void;
-                map<U_8>(callbackfn: (value: any, index: number, array: any[]) => U_8, thisArg?: any): U_8[];
-                filter<S_7 extends any>(predicate: (value: any, index: number, array: any[]) => value is S_7, thisArg?: any): S_7[];
+                map<U_12>(callbackfn: (value: any, index: number, array: any[]) => U_12, thisArg?: any): U_12[];
+                filter<S_10 extends any>(predicate: (value: any, index: number, array: any[]) => value is S_10, thisArg?: any): S_10[];
                 filter(predicate: (value: any, index: number, array: any[]) => unknown, thisArg?: any): any[];
                 reduce(callbackfn: (previousValue: any, currentValue: any, currentIndex: number, array: any[]) => any): any;
                 reduce(callbackfn: (previousValue: any, currentValue: any, currentIndex: number, array: any[]) => any, initialValue: any): any;
-                reduce<U_9>(callbackfn: (previousValue: U_9, currentValue: any, currentIndex: number, array: any[]) => U_9, initialValue: U_9): U_9;
+                reduce<U_13>(callbackfn: (previousValue: U_13, currentValue: any, currentIndex: number, array: any[]) => U_13, initialValue: U_13): U_13;
                 reduceRight(callbackfn: (previousValue: any, currentValue: any, currentIndex: number, array: any[]) => any): any;
                 reduceRight(callbackfn: (previousValue: any, currentValue: any, currentIndex: number, array: any[]) => any, initialValue: any): any;
-                reduceRight<U_10>(callbackfn: (previousValue: U_10, currentValue: any, currentIndex: number, array: any[]) => U_10, initialValue: U_10): U_10;
-                find<S_8 extends any>(predicate: (value: any, index: number, obj: any[]) => value is S_8, thisArg?: any): S_8 | undefined;
+                reduceRight<U_14>(callbackfn: (previousValue: U_14, currentValue: any, currentIndex: number, array: any[]) => U_14, initialValue: U_14): U_14;
+                find<S_11 extends any>(predicate: (value: any, index: number, obj: any[]) => value is S_11, thisArg?: any): S_11 | undefined;
                 find(predicate: (value: any, index: number, obj: any[]) => unknown, thisArg?: any): any;
                 findIndex(predicate: (value: any, index: number, obj: any[]) => unknown, thisArg?: any): number;
                 fill(value: any, start?: number | undefined, end?: number | undefined): any;
@@ -552,8 +754,8 @@ declare class APISource<T> {
                 keys(): IterableIterator<number>;
                 values(): IterableIterator<any>;
                 includes(searchElement: any, fromIndex?: number | undefined): boolean;
-                flatMap<U_11, This_2 = undefined>(callback: (this: This_2, value: any, index: number, array: any[]) => U_11 | readonly U_11[], thisArg?: This_2 | undefined): U_11[];
-                flat<A_2, D_2 extends number = 1>(this: A_2, depth?: D_2 | undefined): FlatArray<A_2, D_2>[];
+                flatMap<U_15, This_3 = undefined>(callback: (this: This_3, value: any, index: number, array: any[]) => U_15 | readonly U_15[], thisArg?: This_3 | undefined): U_15[];
+                flat<A_3, D_3 extends number = 1>(this: A_3, depth?: D_3 | undefined): FlatArray<A_3, D_3>[];
                 [Symbol.iterator](): IterableIterator<any>;
                 readonly [Symbol.unscopables]: {
                     [x: number]: boolean | undefined;
@@ -639,20 +841,20 @@ declare class APISource<T> {
             unshift(...items: any[]): number;
             indexOf(searchElement: any, fromIndex?: number | undefined): number;
             lastIndexOf(searchElement: any, fromIndex?: number | undefined): number;
-            every<S_9 extends any>(predicate: (value: any, index: number, array: any[]) => value is S_9, thisArg?: any): this is S_9[];
+            every<S extends any>(predicate: (value: any, index: number, array: any[]) => value is S, thisArg?: any): this is S[];
             every(predicate: (value: any, index: number, array: any[]) => unknown, thisArg?: any): boolean;
             some(predicate: (value: any, index: number, array: any[]) => unknown, thisArg?: any): boolean;
             forEach(callbackfn: (value: any, index: number, array: any[]) => void, thisArg?: any): void;
-            map<U_12>(callbackfn: (value: any, index: number, array: any[]) => U_12, thisArg?: any): U_12[];
-            filter<S_10 extends any>(predicate: (value: any, index: number, array: any[]) => value is S_10, thisArg?: any): S_10[];
+            map<U>(callbackfn: (value: any, index: number, array: any[]) => U, thisArg?: any): U[];
+            filter<S_1 extends any>(predicate: (value: any, index: number, array: any[]) => value is S_1, thisArg?: any): S_1[];
             filter(predicate: (value: any, index: number, array: any[]) => unknown, thisArg?: any): any[];
             reduce(callbackfn: (previousValue: any, currentValue: any, currentIndex: number, array: any[]) => any): any;
             reduce(callbackfn: (previousValue: any, currentValue: any, currentIndex: number, array: any[]) => any, initialValue: any): any;
-            reduce<U_13>(callbackfn: (previousValue: U_13, currentValue: any, currentIndex: number, array: any[]) => U_13, initialValue: U_13): U_13;
+            reduce<U_1>(callbackfn: (previousValue: U_1, currentValue: any, currentIndex: number, array: any[]) => U_1, initialValue: U_1): U_1;
             reduceRight(callbackfn: (previousValue: any, currentValue: any, currentIndex: number, array: any[]) => any): any;
             reduceRight(callbackfn: (previousValue: any, currentValue: any, currentIndex: number, array: any[]) => any, initialValue: any): any;
-            reduceRight<U_14>(callbackfn: (previousValue: U_14, currentValue: any, currentIndex: number, array: any[]) => U_14, initialValue: U_14): U_14;
-            find<S_11 extends any>(predicate: (value: any, index: number, obj: any[]) => value is S_11, thisArg?: any): S_11 | undefined;
+            reduceRight<U_2>(callbackfn: (previousValue: U_2, currentValue: any, currentIndex: number, array: any[]) => U_2, initialValue: U_2): U_2;
+            find<S_2 extends any>(predicate: (value: any, index: number, obj: any[]) => value is S_2, thisArg?: any): S_2 | undefined;
             find(predicate: (value: any, index: number, obj: any[]) => unknown, thisArg?: any): any;
             findIndex(predicate: (value: any, index: number, obj: any[]) => unknown, thisArg?: any): number;
             fill(value: any, start?: number | undefined, end?: number | undefined): any;
@@ -661,8 +863,8 @@ declare class APISource<T> {
             keys(): IterableIterator<number>;
             values(): IterableIterator<any>;
             includes(searchElement: any, fromIndex?: number | undefined): boolean;
-            flatMap<U_15, This_3 = undefined>(callback: (this: This_3, value: any, index: number, array: any[]) => U_15 | readonly U_15[], thisArg?: This_3 | undefined): U_15[];
-            flat<A_3, D_3 extends number = 1>(this: A_3, depth?: D_3 | undefined): FlatArray<A_3, D_3>[];
+            flatMap<U_3, This = undefined>(callback: (this: This, value: any, index: number, array: any[]) => U_3 | readonly U_3[], thisArg?: This | undefined): U_3[];
+            flat<A, D extends number = 1>(this: A, depth?: D | undefined): FlatArray<A, D>[];
             [Symbol.iterator](): IterableIterator<any>;
             readonly [Symbol.unscopables]: {
                 [x: number]: boolean | undefined;
@@ -706,18 +908,110 @@ declare class APISource<T> {
         }>;
         playlist_once(id: any, start?: number): Promise<import("./api/Youtube").Playlist>;
         playlist(id: string, limit?: number | undefined): Promise<import("./api/Youtube").Playlist>;
-        search(query: any, continuation: any): Promise<import("./api/Youtube").Results>;
-        set_cookie(cookiestr: any): void;
-        string_word_match(big: any, small: any): number;
+        search(query: unknown, continuation?: unknown): Promise<import("./api/Youtube").Results>;
+        set_cookie(cookiestr: string): void;
+        string_word_match(big: string, small: string): number;
         track_match_score(track: any, result: any): number;
         track_match_best(results: any, track: any): any;
         track_match_best_result(results: any, track: any): any;
         track_match_lookup(track: any): Promise<any>;
-        track_match(track: any): Promise<any>;
+        track_match(track: any): Promise<{
+            [n: number]: any;
+            from(start: any, playerResponse: any): any;
+            expire: any;
+            expired(): boolean;
+            extract_streams(streams: any, adaptive: any): void;
+            set(volume: number, live: any, time: number): void;
+            volume: number | undefined;
+            live: any;
+            time: number | undefined;
+            maybeExpired(): boolean;
+            length: number;
+            toString(): string;
+            toLocaleString(): string;
+            pop(): any;
+            push(...items: any[]): number;
+            concat(...items: ConcatArray<any>[]): any[];
+            concat(...items: any[]): any[];
+            join(separator?: string | undefined): string;
+            reverse(): any[];
+            shift(): any;
+            slice(start?: number | undefined, end?: number | undefined): any[];
+            sort(compareFn?: ((a: any, b: any) => number) | undefined): any;
+            splice(start: number, deleteCount?: number | undefined): any[];
+            splice(start: number, deleteCount: number, ...items: any[]): any[];
+            unshift(...items: any[]): number;
+            indexOf(searchElement: any, fromIndex?: number | undefined): number;
+            lastIndexOf(searchElement: any, fromIndex?: number | undefined): number;
+            every<S extends any>(predicate: (value: any, index: number, array: any[]) => value is S, thisArg?: any): this is S[];
+            every(predicate: (value: any, index: number, array: any[]) => unknown, thisArg?: any): boolean;
+            some(predicate: (value: any, index: number, array: any[]) => unknown, thisArg?: any): boolean;
+            forEach(callbackfn: (value: any, index: number, array: any[]) => void, thisArg?: any): void;
+            map<U>(callbackfn: (value: any, index: number, array: any[]) => U, thisArg?: any): U[];
+            filter<S_1 extends any>(predicate: (value: any, index: number, array: any[]) => value is S_1, thisArg?: any): S_1[];
+            filter(predicate: (value: any, index: number, array: any[]) => unknown, thisArg?: any): any[];
+            reduce(callbackfn: (previousValue: any, currentValue: any, currentIndex: number, array: any[]) => any): any;
+            reduce(callbackfn: (previousValue: any, currentValue: any, currentIndex: number, array: any[]) => any, initialValue: any): any;
+            reduce<U_1>(callbackfn: (previousValue: U_1, currentValue: any, currentIndex: number, array: any[]) => U_1, initialValue: U_1): U_1;
+            reduceRight(callbackfn: (previousValue: any, currentValue: any, currentIndex: number, array: any[]) => any): any;
+            reduceRight(callbackfn: (previousValue: any, currentValue: any, currentIndex: number, array: any[]) => any, initialValue: any): any;
+            reduceRight<U_2>(callbackfn: (previousValue: U_2, currentValue: any, currentIndex: number, array: any[]) => U_2, initialValue: U_2): U_2;
+            find<S_2 extends any>(predicate: (value: any, index: number, obj: any[]) => value is S_2, thisArg?: any): S_2 | undefined;
+            find(predicate: (value: any, index: number, obj: any[]) => unknown, thisArg?: any): any;
+            findIndex(predicate: (value: any, index: number, obj: any[]) => unknown, thisArg?: any): number;
+            fill(value: any, start?: number | undefined, end?: number | undefined): any;
+            copyWithin(target: number, start?: number | undefined, end?: number | undefined): any;
+            entries(): IterableIterator<[number, any]>;
+            keys(): IterableIterator<number>;
+            values(): IterableIterator<any>;
+            includes(searchElement: any, fromIndex?: number | undefined): boolean;
+            flatMap<U_3, This = undefined>(callback: (this: This, value: any, index: number, array: any[]) => U_3 | readonly U_3[], thisArg?: This | undefined): U_3[];
+            flat<A, D extends number = 1>(this: A, depth?: D | undefined): FlatArray<A, D>[];
+            [Symbol.iterator](): IterableIterator<any>;
+            readonly [Symbol.unscopables]: {
+                [x: number]: boolean | undefined;
+                length?: boolean | undefined;
+                toString?: boolean | undefined;
+                toLocaleString?: boolean | undefined;
+                pop?: boolean | undefined;
+                push?: boolean | undefined;
+                concat?: boolean | undefined;
+                join?: boolean | undefined;
+                reverse?: boolean | undefined;
+                shift?: boolean | undefined;
+                slice?: boolean | undefined;
+                sort?: boolean | undefined;
+                splice?: boolean | undefined;
+                unshift?: boolean | undefined;
+                indexOf?: boolean | undefined;
+                lastIndexOf?: boolean | undefined;
+                every?: boolean | undefined;
+                some?: boolean | undefined;
+                forEach?: boolean | undefined;
+                map?: boolean | undefined;
+                filter?: boolean | undefined;
+                reduce?: boolean | undefined;
+                reduceRight?: boolean | undefined;
+                find?: boolean | undefined;
+                findIndex?: boolean | undefined;
+                fill?: boolean | undefined;
+                copyWithin?: boolean | undefined;
+                entries?: boolean | undefined;
+                keys?: boolean | undefined;
+                values?: boolean | undefined;
+                includes?: boolean | undefined;
+                flatMap?: boolean | undefined;
+                flat?: boolean | undefined;
+                [Symbol.iterator]?: boolean | undefined;
+                readonly [Symbol.unscopables]?: boolean | undefined;
+                at?: boolean | undefined;
+            };
+            at(index: number): any;
+        }>;
     };
-    Track: T extends 'File' ? undefined : T extends 'Soundcloud' ? typeof import('./api/Soundcloud').Track : T extends 'Spotify' ? typeof import('./api/Spotify').Track : typeof import('./api/Youtube').Track;
-    Results: T extends 'File' ? undefined : T extends 'Soundcloud' ? typeof import('./api/Soundcloud').Results : T extends 'Spotify' ? typeof import('./api/Spotify').Results : typeof import('./api/Youtube').Results;
-    Playlist: T extends 'File' ? undefined : T extends 'Soundcloud' ? typeof import('./api/Soundcloud').Playlist : T extends 'Spotify' ? typeof import('./api/Spotify').Playlist : typeof import('./api/Youtube').Playlist;
+    Track: T extends 'AppleMusic' ? import('./api/AppleMusic').Track : T extends 'File' ? undefined : T extends 'Soundcloud' ? typeof import('./api/Soundcloud').Track : T extends 'Spotify' ? typeof import('./api/Spotify').Track : typeof import('./api/Youtube').Track;
+    Results: T extends 'AppleMusic' ? import('./api/AppleMusic').Results : T extends 'File' ? undefined : T extends 'Soundcloud' ? typeof import('./api/Soundcloud').Results : T extends 'Spotify' ? typeof import('./api/Spotify').Results : typeof import('./api/Youtube').Results;
+    Playlist: T extends 'AppleMusic' ? import('./api/AppleMusic').Playlist : T extends 'File' ? undefined : T extends 'Soundcloud' ? typeof import('./api/Soundcloud').Playlist : T extends 'Spotify' ? typeof import('./api/Spotify').Playlist : typeof import('./api/Youtube').Playlist;
     match(content: string): any;
     weak_match(content: any): any;
     matches(content: any): boolean;

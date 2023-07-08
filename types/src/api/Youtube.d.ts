@@ -36,14 +36,14 @@ declare const api: {
     get_streams(id: string): Promise<YoutubeStreams>;
     playlist_once(id: any, start?: number): Promise<YoutubePlaylist>;
     playlist(id: string, limit?: number | undefined): Promise<YoutubePlaylist>;
-    search(query: any, continuation: any): Promise<YoutubeResults>;
-    set_cookie(cookiestr: any): void;
-    string_word_match(big: any, small: any): number;
+    search(query: unknown, continuation?: unknown): Promise<YoutubeResults>;
+    set_cookie(cookiestr: string): void;
+    string_word_match(big: string, small: string): number;
     track_match_score(track: any, result: any): number;
     track_match_best(results: any, track: any): any;
     track_match_best_result(results: any, track: any): any;
     track_match_lookup(track: any): Promise<any>;
-    track_match(track: any): Promise<any>;
+    track_match(track: any): Promise<YoutubeStreams>;
 };
 declare class YoutubeTrack extends Track<any> {
     constructor();
@@ -61,7 +61,10 @@ declare class YoutubeResults extends TrackResults {
     continuation: any;
     next(): Promise<YoutubeResults | null>;
 }
-declare class YoutubePlaylist extends TrackPlaylist {
+declare class YoutubePlaylist extends TrackPlaylist<any> {
+    constructor(arrayLength?: number | undefined);
+    constructor(arrayLength: number);
+    constructor(...items: any[]);
     process(id: any, data: any, offset: any): void;
     id: any;
     next_offset: any;

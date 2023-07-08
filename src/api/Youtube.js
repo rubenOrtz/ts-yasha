@@ -417,6 +417,12 @@ const api = new (class YoutubeAPI {
         return list
     }
 
+    /**
+     * 
+     * @param {unknown} query 
+     * @param {unknown} [continuation] 
+     * @returns {Promise<YoutubeResults>}
+     */
     async search(query, continuation) {
         var body = await this.api_request(
             'search',
@@ -449,6 +455,11 @@ const api = new (class YoutubeAPI {
         return results
     }
 
+    /**
+     * 
+     * @param {string} cookiestr 
+     * @returns {void}
+     */
     set_cookie(cookiestr) {
         if (!cookiestr) {
             this.cookie = ''
@@ -476,7 +487,14 @@ const api = new (class YoutubeAPI {
         this.cookie = cookiestr
     }
 
+    /**
+     * 
+     * @param {string} big 
+     * @param {string} small 
+     * @returns {number}
+     */
     string_word_match(big, small) {
+        // @ts-ignore
         var boundary = (c) => /[\s\W]/g.test(c)
 
         big = big.toLowerCase()
@@ -579,6 +597,11 @@ const api = new (class YoutubeAPI {
         return this.track_match_best_result(results, track)
     }
 
+    /**
+     * 
+     * @param {*} track 
+     * @returns {Promise<YoutubeStreams>}
+     */
     async track_match(track) {
         if (track.youtube_id) {
             try {

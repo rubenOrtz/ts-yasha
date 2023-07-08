@@ -40,6 +40,34 @@ class Subscription{
 }
 
 class TrackPlayer extends EventEmitter{
+	/** @type {boolean} */
+	normalize_volume = false
+	/** @type {boolean} */
+	external_encrypt = false
+	/** @type {boolean} */
+	external_packet_send = false
+	/** @type {number} */
+	last_error = 0
+	/** @type {ReturnType<typeof import('./Source').resolve> | null} */
+	track
+	/** @type {unknown} */
+	stream
+	/** @type {Subscription[]} */
+	subscriptions
+	/** @type {number} */
+	play_id = 0
+	/** @type {number | null} */
+	silence_frames_interval = null
+	/** @type {number} */
+	silence_frames_left = 0
+	/** @type {boolean} */
+	silence_frames_needed = false
+	/** @type {AudioPlayer} */
+	player
+	/**
+	 * 
+	 * @param {{normalize_volume:boolean;external_encrypt:boolean;external_packet_send:boolean}} [options] 
+	 */
 	constructor(options){
 		super();
 
@@ -457,6 +485,11 @@ class TrackPlayer extends EventEmitter{
 		return result;
 	}
 
+	/**
+	 * 
+	 * @param {import('./Track').Track<any>} track 
+	 * @returns {void}
+	 */
 	play(track){
 		this.play_id++;
 		this.last_error = 0;

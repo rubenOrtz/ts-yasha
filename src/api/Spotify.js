@@ -238,10 +238,24 @@ const api = new (class SpotifyAPI {
         return playlist
     }
 
+    /**
+     * 
+     * @param {string} id 
+     * @param {number} [start] 
+     * @param {number} [length] 
+     * @returns {Promise<SpotifyPlaylist>}
+     */
     async playlist_once(id, start = 0, length) {
         return await this.list_once('playlists', id, start, length)
     }
 
+    /**
+     * 
+     * @param {string} id 
+     * @param {number} [start] 
+     * @param {number} [length] 
+     * @returns {Promise<SpotifyPlaylist>}
+     */
     async album_once(id, start = 0, length) {
         return await this.list_once('albums', id, start, length)
     }
@@ -279,10 +293,20 @@ const api = new (class SpotifyAPI {
         return this.list('playlists', id, length)
     }
 
+    /**
+     * 
+     * @param {string} id
+     * @param {number} [length]
+     * @returns {Promise<SpotifyPlaylist>}
+     */
     async album(id, length) {
         return this.list('albums', id, length)
     }
 
+    /**
+     * 
+     * @param {string} cookie
+     */
     set_cookie(cookie) {
         this.account_data.cookie = cookie
         this.reload(true)

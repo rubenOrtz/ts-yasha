@@ -1,19 +1,23 @@
 export = TrackPlayer;
 declare class TrackPlayer extends EventEmitter {
-    constructor(options: any);
-    normalize_volume: any;
-    external_encrypt: any;
-    external_packet_send: any;
+    constructor(options?: {
+        normalize_volume: boolean;
+        external_encrypt: boolean;
+        external_packet_send: boolean;
+    } | undefined);
+    normalize_volume: boolean;
+    external_encrypt: boolean;
+    external_packet_send: boolean;
     last_error: number;
-    track: any;
-    stream: any;
-    subscriptions: any[];
+    track: ReturnType<typeof import('./Source').resolve> | null;
+    stream: unknown;
+    subscriptions: Subscription[];
     play_id: number;
-    silence_frames_interval: any;
+    silence_frames_interval: number | null;
     silence_frames_left: number;
     silence_frames_needed: boolean;
+    player: AudioPlayer;
     onstatechange(old: any, cur: any): void;
-    player: any;
     subscribe(connection: any): Subscription;
     unsubscribe(subscription: any): void;
     unsubscribe_all(): void;
@@ -33,7 +37,7 @@ declare class TrackPlayer extends EventEmitter {
     error(error: any, retryable: any): boolean;
     get_best_stream_one(streams: any): any;
     get_best_stream(streams: any): any;
-    play(track: any): void;
+    play(track: import('./Track').Track<any>): void;
     start(): Promise<void>;
     check_destroyed(): void;
     hasPlayer(): boolean;

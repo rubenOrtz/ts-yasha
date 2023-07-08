@@ -6,7 +6,7 @@ export class Track<T> {
     streams: unknown;
     author: string | undefined;
     icons: any | undefined;
-    id: string | null;
+    id: string | null | undefined;
     title: string | undefined;
     thumbnails: any | undefined;
     setOwner(name: string, icons: any): this;
@@ -24,10 +24,13 @@ export class TrackResults extends Array<any> {
     constructor(...items: any[]);
     next(): Promise<unknown | null>;
 }
-export class TrackPlaylist extends TrackResults {
+export class TrackPlaylist<T> extends TrackResults {
+    constructor(arrayLength?: number | undefined);
+    constructor(arrayLength: number);
+    constructor(...items: any[]);
     title: string | undefined;
     description: string | undefined;
-    firstTrack: Track<any> | undefined;
+    firstTrack: Track<T> | undefined;
     setMetadata(title: string, description: string): this;
     setFirstTrack(track: Track<any>): this;
     load(): Promise<this>;

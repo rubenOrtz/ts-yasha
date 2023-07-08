@@ -319,9 +319,8 @@ const api = new (class AppleMusicAPI {
 
     /**
      *
-     * @protected
      * @param {string} id
-     * @returns
+     * @returns {Promise<ReturnType<typeof Youtube.track_match>>}
      */
     async get_streams(id) {
         return Youtube.track_match(await this.get(id))
@@ -464,7 +463,6 @@ const api = new (class AppleMusicAPI {
 
     /**
      *
-     * @protected
      * @param {string} id
      * @param {number} [offset]
      * @param {number} [length]
@@ -476,7 +474,6 @@ const api = new (class AppleMusicAPI {
 
     /**
      *
-     * @protected
      * @param {string} id
      * @param {number} [offset]
      * @param {number} [length]

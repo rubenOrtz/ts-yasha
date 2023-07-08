@@ -21,7 +21,7 @@ declare const api: {
     } | undefined): Promise<any>;
     check_valid_id(id: string): void;
     get(id: string): Promise<AppleMusicTrack>;
-    get_streams(id: string): Promise<any>;
+    get_streams(id: string): Promise<ReturnType<typeof Youtube.track_match>>;
     get_next(url: string, param: any): number;
     search(query: any, offset?: number | undefined, limit?: number | undefined): Promise<AppleMusicResults>;
     list_once(type: string, id: string, offset?: number | undefined, limit?: number | undefined): Promise<AppleMusicPlaylist>;
@@ -47,7 +47,10 @@ declare class AppleMusicResults extends TrackResults {
     protected set_continuation(query: any, start: number): void;
     next(): Promise<AppleMusicResults | null>;
 }
-declare class AppleMusicPlaylist extends TrackPlaylist {
+declare class AppleMusicPlaylist extends TrackPlaylist<any> {
+    constructor(arrayLength?: number | undefined);
+    constructor(arrayLength: number);
+    constructor(...items: any[]);
     type: string | undefined;
     id: string | undefined;
     start: number | undefined;
@@ -56,6 +59,7 @@ declare class AppleMusicPlaylist extends TrackPlaylist {
     next(): Promise<AppleMusicPlaylist | null>;
     get url(): string;
 }
+import Youtube = require("./Youtube");
 import { Track } from "../Track";
 import { TrackImage } from "../Track";
 import { TrackResults } from "../Track";
