@@ -16,7 +16,7 @@ export namespace api {
             api_request(path: any, body: any, query: any): Promise<{
                 [key: string]: any;
             }>;
-            search(search: any, continuation: any, params: any): Promise<{
+            search(search: string, continuation: any, params: any): Promise<{
                 [n: number]: any;
                 process(body: any): void;
                 process_section(section: any): void;
@@ -131,10 +131,10 @@ export namespace api {
         get(id: string): Promise<import("./src/api/Youtube").Track>;
         get_streams(id: string): Promise<{
             [n: number]: any;
-            from(start: any, playerResponse: any): any;
-            expire: any;
+            expire: number | undefined;
+            from(start: number, playerResponse: any): any;
             expired(): boolean;
-            extract_streams(streams: any, adaptive: any): void;
+            extract_streams(streams: any[], adaptive?: boolean | undefined): void;
             set(volume: number, live: any, time: number): void;
             volume: number | undefined;
             live: any;
@@ -233,10 +233,10 @@ export namespace api {
         track_match_lookup(track: any): Promise<any>;
         track_match(track: any): Promise<{
             [n: number]: any;
-            from(start: any, playerResponse: any): any;
-            expire: any;
+            expire: number | undefined;
+            from(start: number, playerResponse: any): any;
             expired(): boolean;
-            extract_streams(streams: any, adaptive: any): void;
+            extract_streams(streams: any[], adaptive?: boolean | undefined): void;
             set(volume: number, live: any, time: number): void;
             volume: number | undefined;
             live: any;
@@ -474,18 +474,20 @@ export namespace api {
         reloading: Promise<void> | null;
         needs_reload: boolean;
         account_data: {};
-        reload(force: any): Promise<void>;
+        reload(force?: boolean | undefined): Promise<void>;
         load(): Promise<void>;
         prefetch(): Promise<void> | undefined;
-        api_request(path: any, options?: {}): Promise<any>;
-        check_valid_id(id: any): void;
-        get(id: any): Promise<import("./src/api/Spotify").Track>;
-        get_streams(id: any): Promise<{
+        api_request(path: string, options?: import("node-fetch").RequestInit | undefined): Promise<{
+            [key: string]: any;
+        }>;
+        check_valid_id(id: string): void;
+        get(id: string): Promise<import("./src/api/Spotify").Track>;
+        get_streams(id: string): Promise<{
             [n: number]: any;
-            from(start: any, playerResponse: any): any;
-            expire: any;
+            expire: number | undefined;
+            from(start: number, playerResponse: any): any;
             expired(): boolean;
-            extract_streams(streams: any, adaptive: any): void;
+            extract_streams(streams: any[], adaptive?: boolean | undefined): void;
             set(volume: number, live: any, time: number): void;
             volume: number | undefined;
             live: any;
@@ -573,8 +575,8 @@ export namespace api {
             };
             at(index: number): any;
         }>;
-        search(query: any, start?: number, length?: number): Promise<import("./src/api/Spotify").Results>;
-        list_once(type: string, id: string, start?: number | undefined, length?: number | undefined): Promise<import("./src/api/Spotify").Playlist>;
+        search(query: string, start?: number | undefined, length?: number | undefined): Promise<import("./src/api/Spotify").Results>;
+        list_once(type: "playlists" | "albums", id: string, start?: number | undefined, length?: number | undefined): Promise<import("./src/api/Spotify").Playlist>;
         playlist_once(id: string, start?: number | undefined, length?: number | undefined): Promise<import("./src/api/Spotify").Playlist>;
         album_once(id: string, start?: number | undefined, length?: number | undefined): Promise<import("./src/api/Spotify").Playlist>;
         list(type: any, id: string, limit?: number | undefined): Promise<import("./src/api/Spotify").Playlist>;

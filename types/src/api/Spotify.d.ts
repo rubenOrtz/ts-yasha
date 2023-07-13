@@ -7,18 +7,20 @@ declare const api: {
     reloading: Promise<void> | null;
     needs_reload: boolean;
     account_data: {};
-    reload(force: any): Promise<void>;
+    reload(force?: boolean | undefined): Promise<void>;
     load(): Promise<void>;
     prefetch(): Promise<void> | undefined;
-    api_request(path: any, options?: {}): Promise<any>;
-    check_valid_id(id: any): void;
-    get(id: any): Promise<SpotifyTrack>;
-    get_streams(id: any): Promise<{
+    api_request(path: string, options?: import("node-fetch").RequestInit | undefined): Promise<{
+        [key: string]: any;
+    }>;
+    check_valid_id(id: string): void;
+    get(id: string): Promise<SpotifyTrack>;
+    get_streams(id: string): Promise<{
         [n: number]: any;
-        from(start: any, playerResponse: any): any;
-        expire: any;
+        expire: number | undefined;
+        from(start: number, playerResponse: any): any;
         expired(): boolean;
-        extract_streams(streams: any, adaptive: any): void;
+        extract_streams(streams: any[], adaptive?: boolean | undefined): void;
         set(volume: number, live: any, time: number): void;
         volume: number | undefined;
         live: any;
@@ -106,8 +108,8 @@ declare const api: {
         };
         at(index: number): any;
     }>;
-    search(query: any, start?: number, length?: number): Promise<SpotifyResults>;
-    list_once(type: string, id: string, start?: number | undefined, length?: number | undefined): Promise<SpotifyPlaylist>;
+    search(query: string, start?: number | undefined, length?: number | undefined): Promise<SpotifyResults>;
+    list_once(type: 'playlists' | 'albums', id: string, start?: number | undefined, length?: number | undefined): Promise<SpotifyPlaylist>;
     playlist_once(id: string, start?: number | undefined, length?: number | undefined): Promise<SpotifyPlaylist>;
     album_once(id: string, start?: number | undefined, length?: number | undefined): Promise<SpotifyPlaylist>;
     list(type: any, id: string, limit?: number | undefined): Promise<SpotifyPlaylist>;
@@ -115,18 +117,18 @@ declare const api: {
     album(id: string, length?: number | undefined): Promise<SpotifyPlaylist>;
     set_cookie(cookie: string): void;
 };
-declare class SpotifyTrack extends Track<any> {
+declare class SpotifyTrack extends Track<"Spotify"> {
     constructor();
-    from(track: any, artist: any): this;
+    from(track: any, artist?: any): this;
     artists: any;
     explicit: any;
     fetch(): Promise<SpotifyTrack>;
     getStreams(): Promise<{
         [n: number]: any;
-        from(start: any, playerResponse: any): any;
-        expire: any;
+        expire: number | undefined;
+        from(start: number, playerResponse: any): any;
         expired(): boolean;
-        extract_streams(streams: any, adaptive: any): void;
+        extract_streams(streams: any[], adaptive?: boolean | undefined): void;
         set(volume: number, live: any, time: number): void;
         volume: number | undefined;
         live: any;
@@ -217,20 +219,20 @@ declare class SpotifyTrack extends Track<any> {
     get url(): string;
 }
 declare class SpotifyResults extends TrackResults {
-    set_continuation(query: any, start: any): void;
-    query: any;
-    start: any;
+    query: string | undefined;
+    start: number | undefined;
+    set_continuation(query: string, start: number): void;
     next(): Promise<SpotifyResults | null>;
 }
-declare class SpotifyPlaylist extends TrackPlaylist<any> {
+declare class SpotifyPlaylist extends TrackPlaylist<SpotifyTrack> {
     constructor(arrayLength?: number | undefined);
     constructor(arrayLength: number);
     constructor(...items: any[]);
-    set(type: any, id: any): void;
-    type: any;
-    id: any;
-    set_continuation(start: any): void;
-    start: any;
+    type: 'playlists' | 'albums' | undefined;
+    id: string | undefined;
+    start: number | undefined;
+    set(type: 'playlists' | 'albums', id: string): void;
+    set_continuation(start: number): void;
     next(): Promise<SpotifyPlaylist | null>;
     get url(): string;
 }

@@ -16,7 +16,7 @@ declare const api: {
         api_request(path: any, body: any, query: any): Promise<{
             [key: string]: any;
         }>;
-        search(search: any, continuation: any, params: any): Promise<YoutubeMusicResults>;
+        search(search: string, continuation: any, params: any): Promise<YoutubeMusicResults>;
     };
     innertube_client: {
         clientName: string;
@@ -61,12 +61,12 @@ declare class YoutubeResults extends TrackResults {
     continuation: any;
     next(): Promise<YoutubeResults | null>;
 }
-declare class YoutubePlaylist extends TrackPlaylist<any> {
+declare class YoutubePlaylist extends TrackPlaylist<"Youtube"> {
     constructor(arrayLength?: number | undefined);
     constructor(arrayLength: number);
     constructor(...items: any[]);
-    process(id: any, data: any, offset: any): void;
-    id: any;
+    process(id: string, data: any, offset?: any): void;
+    id: string | undefined;
     next_offset: any;
     next(): Promise<YoutubePlaylist | null>;
     get url(): string;
@@ -87,9 +87,9 @@ declare class YoutubeMusicResults extends TrackResults {
     next(): Promise<YoutubeMusicResults | null>;
 }
 declare class YoutubeStreams extends TrackStreams {
-    from(start: any, playerResponse: any): this;
-    expire: any;
-    extract_streams(streams: any, adaptive: any): void;
+    expire: number | undefined;
+    from(start: number, playerResponse: any): this;
+    extract_streams(streams: any[], adaptive?: boolean | undefined): void;
 }
 import { Track } from "../Track";
 import { TrackResults } from "../Track";

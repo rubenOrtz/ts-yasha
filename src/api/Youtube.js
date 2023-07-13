@@ -144,7 +144,16 @@ class YoutubeResults extends TrackResults {
     }
 }
 
+/**
+ * @extends {TrackPlaylist<'Youtube'>}
+ */
 class YoutubePlaylist extends TrackPlaylist {
+    /**
+     * 
+     * @param {string} id 
+     * @param {*} data 
+     * @param {*} [offset] 
+     */
     process(id, data, offset) {
         this.id = id
 
@@ -168,18 +177,39 @@ class YoutubePlaylist extends TrackPlaylist {
 }
 
 class YoutubeStream extends TrackStream {
+    /** @type {unknown | undefined} */
+    itag
+    /**
+     * 
+     * @param {string} url 
+     * @param {unknown} itag 
+     */
     constructor(url, itag) {
         super(url)
 
         this.itag = itag
     }
 
+    /**
+     * 
+     * @param {YoutubeStream} other 
+     * @returns {boolean}
+     */
     equals(other) {
-        return other instanceof YoutubeStream && this.itag && this.itag == other.itag
+        // ! This is an a modification of the original Youtube.js file from the project.
+        return !!(other instanceof YoutubeStream && this.itag && this.itag == other.itag)
     }
 }
 
 class YoutubeStreams extends TrackStreams {
+    /** @type {number | undefined} */
+    expire
+    /**
+     * 
+     * @param {number} start 
+     * @param {any} playerResponse 
+     * @returns 
+     */
     from(start, playerResponse) {
         var loudness = 0
 
@@ -196,9 +226,15 @@ class YoutubeStreams extends TrackStreams {
     }
 
     expired() {
-        return Date.now() > this.expire
+        // ! This is an a modification of the original Youtube.js file from the project.
+        return Date.now() > (this.expire??0)
     }
 
+    /**
+     * 
+     * @param {any[]} streams 
+     * @param {boolean} [adaptive] 
+     */
     extract_streams(streams, adaptive) {
         for (var fmt of streams) {
             if (fmt.type == 'FORMAT_STREAM_TYPE_OTF') continue
@@ -813,6 +849,13 @@ var music = new (class YoutubeMusic {
         return api.api_request.call(this, path, body, query, 'music')
     }
 
+    /**
+     * 
+     * @param {string} search 
+     * @param {*} continuation 
+     * @param {*} params 
+     * @returns 
+     */
     async search(search, continuation, params) {
         var query, body
 

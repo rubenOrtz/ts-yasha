@@ -215,9 +215,9 @@ class Youtube extends APISource {
     /**
      * 
      * @override
-     * @param {unknown} query 
+     * @param {string} query 
      * @param {unknown} [continuation] 
-     * @returns {Promise<import('./api/Youtube').Results>}
+     * @returns {Promise<import('./Track').TrackResults>}
      */
     // @ts-ignore
     async search(query, continuation) {
@@ -297,10 +297,10 @@ class Soundcloud extends APISource {
      * @param {string} query 
      * @param {number} offset 
      * @param {number} [length] 
-     * @returns {Promise<import('./api/Soundcloud').Results>}
+     * @returns {Promise<import('./Track').TrackResults>}
      */
     // @ts-ignore
-    async search(query, offset, length) {
+    async search(query, offset, length) { //FIXME this offset is required
         return this.api.search(query, offset, length)
     }
 
@@ -373,7 +373,7 @@ class Spotify extends APISource {
      * @param {string} query 
      * @param {number} [offset] 
      * @param {number} [length] 
-     * @returns {Promise<import('./api/Spotify').Results>}
+     * @returns {Promise<import('./Track').TrackResults>}
      */
     async search(query, offset, length) {
         return this.api.search(query, offset, length)
@@ -474,7 +474,7 @@ class AppleMusic extends APISource {
      * @param {string} query 
      * @param {number} [offset] 
      * @param {number} [length] 
-     * @returns 
+     * @returns {Promise<import('./Track').TrackResults>}
      */
     async search(query, offset, length) {
         return this.api.search(query, offset, length)

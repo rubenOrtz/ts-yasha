@@ -4,12 +4,24 @@ const Youtube = require('./Youtube')
 
 const { Track, TrackImage, TrackResults, TrackPlaylist } = require('../Track')
 
+/**
+ * @extends {Track<'Spotify'>}
+ */
 class SpotifyTrack extends Track {
+
+
     constructor() {
         super('Spotify')
     }
 
+    /**
+     * 
+     * @param {any} track 
+     * @param {any} [artist] 
+     * @returns 
+     */
     from(track, artist) {
+        // @ts-ignore
         this.artists = track.artists.map((artist) => artist.name)
         this.setOwner(this.artists.join(', '), artist ? TrackImage.from(artist.images) : null)
         this.setMetadata(track.id, track.name, track.duration_ms / 1000, TrackImage.from(track.album.images))
@@ -19,6 +31,8 @@ class SpotifyTrack extends Track {
     }
 
     async fetch() {
+        // TODO: check this ignore
+        // @ts-ignore
         return api.get(this.id)
     }
 
@@ -32,29 +46,68 @@ class SpotifyTrack extends Track {
 }
 
 class SpotifyResults extends TrackResults {
+    /** @type {string | undefined} */
+    query
+    /** @type {number | undefined} */
+    start
+
+    /**
+     * 
+     * @param {string} query 
+     * @param {number} start 
+     */
     set_continuation(query, start) {
         this.query = query
         this.start = start
     }
 
+    /**
+     * 
+     * @returns {Promise<SpotifyResults | null>}
+     */
     async next() {
         if (this.query != null) return await api.search(this.query, this.start)
         return null
     }
 }
 
+/**
+ * @extends {TrackPlaylist<SpotifyTrack>}
+ */
 class SpotifyPlaylist extends TrackPlaylist {
+    /** @type {'playlists' | 'albums' | undefined} */
+    type
+    /** @type {string | undefined} */
+    id
+    /** @type {number | undefined} */
+    start
+
+    /**
+     * 
+     * @param {'playlists' | 'albums'} type
+     * @param {string} id
+     * @returns {void}
+     */
     set(type, id) {
         this.type = type
         this.id = id
     }
 
+    /**
+     * 
+     * @param {number} start
+     * @returns {void} 
+     */
     set_continuation(start) {
         this.start = start
     }
 
+    /**
+     * 
+     * @returns {Promise<SpotifyPlaylist | null>}
+     */
     async next() {
-        if (this.start !== undefined) return await api.list_once(this.type, this.id, this.start)
+        if (this.start !== undefined && this.type !== undefined && this.id !== undefined) return await api.list_once(this.type, this.id, this.start)
         return null
     }
 
@@ -78,6 +131,11 @@ const api = new (class SpotifyAPI {
         this.account_data = {}
     }
 
+    /**
+     * 
+     * @param {boolean} [force] 
+     * @returns {Promise<void>}
+     */
     async reload(force) {
         if (this.reloading) {
             if (force) this.needs_reload = true
@@ -111,6 +169,12 @@ const api = new (class SpotifyAPI {
         if (this.reloading) return this.reloading
     }
 
+    /**
+     * 
+     * @param {string} path 
+     * @param {import('node-fetch').RequestInit} [options] 
+     * @returns {Promise<{[key: string]: any}>}
+     */
     async api_request(path, options = {}) {
         if (!options.headers) options.headers = {}
         if (options.body) options.body = JSON.stringify(options.body)
@@ -119,6 +183,8 @@ const api = new (class SpotifyAPI {
         for (var tries = 0; tries < 2; tries++) {
             await this.prefetch()
 
+            // ? is authorization or Authorization
+            // @ts-ignore
             options.headers.authorization = 'Bearer ' + this.token
             res = (await Request.getResponse('https://api.spotify.com/v1/' + path, options)).res
 
@@ -133,12 +199,15 @@ const api = new (class SpotifyAPI {
         }
 
         try {
+            // @ts-ignore
             body = await res.text()
         } catch (e) {
+            // @ts-ignore
             if (!res.ok) throw new SourceError.INTERNAL_ERROR(null, e)
             throw new SourceError.NETWORK_ERROR(null, e)
         }
 
+        // @ts-ignore
         if (!res.ok) throw new SourceError.INTERNAL_ERROR(null, new Error(body))
         try {
             body = JSON.parse(body)
@@ -149,10 +218,19 @@ const api = new (class SpotifyAPI {
         return body
     }
 
+    /**
+     * 
+     * @param {string} id 
+     */
     check_valid_id(id) {
         if (!/^[\w]+$/.test(id)) throw new SourceError.NOT_FOUND()
     }
 
+    /**
+     * 
+     * @param {string} id 
+     * @returns 
+     */
     async get(id) {
         this.check_valid_id(id)
 
@@ -169,10 +247,22 @@ const api = new (class SpotifyAPI {
         }
     }
 
+    /**
+     * 
+     * @param {string} id 
+     * @returns 
+     */
     async get_streams(id) {
         return Youtube.track_match(await this.get(id))
     }
 
+    /**
+     * 
+     * @param {string} query 
+     * @param {number} [start] 
+     * @param {number} [length] 
+     * @returns {Promise<SpotifyResults>}
+     */
     async search(query, start = 0, length = 20) {
         var data = await this.api_request(
             'search/?type=track&q=' +
@@ -196,7 +286,7 @@ const api = new (class SpotifyAPI {
 
     /**
      *
-     * @param {string} type
+     * @param {'playlists' | 'albums'} type
      * @param {string} id
      * @param {number} [start]
      * @param {number} [length]
@@ -276,6 +366,7 @@ const api = new (class SpotifyAPI {
 
             if (!list) list = result
             else list = list.concat(result)
+            // @ts-ignore
             offset = result.start
         } while (offset !== undefined && (!limit || list.length < limit))
 
@@ -308,6 +399,7 @@ const api = new (class SpotifyAPI {
      * @param {string} cookie
      */
     set_cookie(cookie) {
+        // @ts-ignore
         this.account_data.cookie = cookie
         this.reload(true)
     }

@@ -26,7 +26,7 @@ declare class AppleMusic extends APISource<"AppleMusic"> {
         playlist: string;
     };
     resolve(match: ReturnType<typeof this.match>): Promise<import('./api/AppleMusic').Track | import('./api/AppleMusic').Playlist | undefined>;
-    search(query: string, offset?: number | undefined, length?: number | undefined): Promise<import("./api/AppleMusic").Results>;
+    search(query: string, offset?: number | undefined, length?: number | undefined): Promise<import('./Track').TrackResults>;
     playlistOnce(id: string, offset?: number | undefined, length?: number | undefined): Promise<import("./api/AppleMusic").Playlist>;
     albumOnce(id: string, offset?: number | undefined, length?: number | undefined): Promise<import('./api/AppleMusic').Playlist>;
 }
@@ -38,7 +38,7 @@ declare class Soundcloud extends APISource<"Soundcloud"> {
         shortlink: string;
     };
     resolve(match: ReturnType<typeof this.match>): Promise<import('./api/Soundcloud').Track | import('./api/Soundcloud').Playlist | null>;
-    search(query: string, offset: number, length?: number | undefined): Promise<import('./api/Soundcloud').Results>;
+    search(query: string, offset: number, length?: number | undefined): Promise<import('./Track').TrackResults>;
     playlistOnce(id: string, offset?: number | undefined, length?: number | undefined): Promise<import('./api/Soundcloud').Playlist | null>;
 }
 declare class Youtube extends APISource<"Youtube"> {
@@ -56,7 +56,7 @@ declare class Youtube extends APISource<"Youtube"> {
         api_request(path: any, body: any, query: any): Promise<{
             [key: string]: any;
         }>;
-        search(search: any, continuation: any, params: any): Promise<{
+        search(search: string, continuation: any, params: any): Promise<{
             [n: number]: any;
             process(body: any): void;
             process_section(section: any): void;
@@ -165,7 +165,7 @@ declare class Youtube extends APISource<"Youtube"> {
     } | null;
     resolve(match: Exclude<ReturnType<Awaited<typeof this.match>>, null>): Promise<import('./api/Youtube').Track | import('./api/Youtube').Playlist>;
     weak_resolve(match: any): Promise<null | import('./api/Youtube').Track | import('./api/Youtube').Playlist>;
-    override search(query: unknown, continuation?: unknown): Promise<import('./api/Youtube').Results>;
+    override search(query: string, continuation?: unknown): Promise<import('./Track').TrackResults>;
     playlistOnce(id: string, start?: number | undefined): Promise<import('./api/Youtube').Playlist>;
     setCookie(cookie: string): void;
 }
@@ -183,7 +183,7 @@ declare class Spotify extends APISource<"Spotify"> {
         playlist: string;
     };
     resolve(match: ReturnType<typeof this.match>): Promise<import('./api/Spotify').Track | import('./api/Spotify').Playlist | undefined>;
-    search(query: string, offset?: number | undefined, length?: number | undefined): Promise<import('./api/Spotify').Results>;
+    search(query: string, offset?: number | undefined, length?: number | undefined): Promise<import('./Track').TrackResults>;
     playlistOnce(id: string, offset?: number | undefined, length?: number | undefined): Promise<import('./api/Spotify').Playlist>;
     albumOnce(id: string, offset?: number | undefined, length?: number | undefined): Promise<import('./api/Spotify').Playlist>;
     setCookie(cookie: string): void;
@@ -215,10 +215,10 @@ declare class APISource<T> {
         get(id: string): Promise<import("./api/AppleMusic").Track>;
         get_streams(id: string): Promise<Promise<{
             [n: number]: any;
-            from(start: any, playerResponse: any): any;
-            expire: any;
+            expire: number | undefined;
+            from(start: number, playerResponse: any): any;
             expired(): boolean;
-            extract_streams(streams: any, adaptive: any): void;
+            extract_streams(streams: any[], adaptive?: boolean | undefined): void;
             set(volume: number, live: any, time: number): void;
             volume: number | undefined;
             live: any;
@@ -469,18 +469,20 @@ declare class APISource<T> {
         reloading: Promise<void> | null;
         needs_reload: boolean;
         account_data: {};
-        reload(force: any): Promise<void>;
+        reload(force?: boolean | undefined): Promise<void>;
         load(): Promise<void>;
         prefetch(): Promise<void> | undefined;
-        api_request(path: any, options?: {}): Promise<any>;
-        check_valid_id(id: any): void;
-        get(id: any): Promise<import("./api/Spotify").Track>;
-        get_streams(id: any): Promise<{
+        api_request(path: string, options?: import("node-fetch").RequestInit | undefined): Promise<{
+            [key: string]: any;
+        }>;
+        check_valid_id(id: string): void;
+        get(id: string): Promise<import("./api/Spotify").Track>;
+        get_streams(id: string): Promise<{
             [n: number]: any;
-            from(start: any, playerResponse: any): any;
-            expire: any;
+            expire: number | undefined;
+            from(start: number, playerResponse: any): any;
             expired(): boolean;
-            extract_streams(streams: any, adaptive: any): void;
+            extract_streams(streams: any[], adaptive?: boolean | undefined): void;
             set(volume: number, live: any, time: number): void;
             volume: number | undefined;
             live: any;
@@ -568,8 +570,8 @@ declare class APISource<T> {
             };
             at(index: number): any;
         }>;
-        search(query: any, start?: number, length?: number): Promise<import("./api/Spotify").Results>;
-        list_once(type: string, id: string, start?: number | undefined, length?: number | undefined): Promise<import("./api/Spotify").Playlist>;
+        search(query: string, start?: number | undefined, length?: number | undefined): Promise<import("./api/Spotify").Results>;
+        list_once(type: "playlists" | "albums", id: string, start?: number | undefined, length?: number | undefined): Promise<import("./api/Spotify").Playlist>;
         playlist_once(id: string, start?: number | undefined, length?: number | undefined): Promise<import("./api/Spotify").Playlist>;
         album_once(id: string, start?: number | undefined, length?: number | undefined): Promise<import("./api/Spotify").Playlist>;
         list(type: any, id: string, limit?: number | undefined): Promise<import("./api/Spotify").Playlist>;
@@ -593,7 +595,7 @@ declare class APISource<T> {
             api_request(path: any, body: any, query: any): Promise<{
                 [key: string]: any;
             }>;
-            search(search: any, continuation: any, params: any): Promise<{
+            search(search: string, continuation: any, params: any): Promise<{
                 [n: number]: any;
                 process(body: any): void;
                 process_section(section: any): void;
@@ -708,10 +710,10 @@ declare class APISource<T> {
         get(id: string): Promise<import("./api/Youtube").Track>;
         get_streams(id: string): Promise<{
             [n: number]: any;
-            from(start: any, playerResponse: any): any;
-            expire: any;
+            expire: number | undefined;
+            from(start: number, playerResponse: any): any;
             expired(): boolean;
-            extract_streams(streams: any, adaptive: any): void;
+            extract_streams(streams: any[], adaptive?: boolean | undefined): void;
             set(volume: number, live: any, time: number): void;
             volume: number | undefined;
             live: any;
@@ -810,10 +812,10 @@ declare class APISource<T> {
         track_match_lookup(track: any): Promise<any>;
         track_match(track: any): Promise<{
             [n: number]: any;
-            from(start: any, playerResponse: any): any;
-            expire: any;
+            expire: number | undefined;
+            from(start: number, playerResponse: any): any;
             expired(): boolean;
-            extract_streams(streams: any, adaptive: any): void;
+            extract_streams(streams: any[], adaptive?: boolean | undefined): void;
             set(volume: number, live: any, time: number): void;
             volume: number | undefined;
             live: any;
