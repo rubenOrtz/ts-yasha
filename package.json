@@ -15,7 +15,7 @@
 		"proto": "mkdir -p proto/build; protoc --proto_path=proto --js_out=import_style=commonjs,binary:proto/build youtube.proto",
 		"install": "npm run proto",
 		"build": "npm run proto",
-		"type": "tsc"
+		"type": "tsc || rm -r tmp"
 	},
 	"devDependencies": {
 		"typescript": "5.1.3"

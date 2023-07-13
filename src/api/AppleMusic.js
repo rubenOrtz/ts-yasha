@@ -425,9 +425,6 @@ const api = new (class AppleMusicAPI {
                 offset,
                 limit,
                 'include[songs]': 'artists',
-                'fields[artists]': 'name,url',
-                // TODO? this is overide
-                // @ts-ignore
                 'fields[artists]': 'name,url,artwork',
             })
         }
