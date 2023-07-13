@@ -13,7 +13,9 @@ declare const api: {
         innertube_key: string;
         readonly cookie: string;
         readonly sapisid: string;
-        api_request(path: any, body: any, query: any): Promise<{
+        api_request(path: string, body?: {
+            [key: string]: any;
+        } | undefined, query?: string | undefined): Promise<{
             [key: string]: any;
         }>;
         search(search: string, continuation: any, params: any): Promise<YoutubeMusicResults>;
@@ -45,7 +47,7 @@ declare const api: {
     track_match_lookup(track: any): Promise<any>;
     track_match(track: any): Promise<YoutubeStreams>;
 };
-declare class YoutubeTrack extends Track<any> {
+declare class YoutubeTrack extends Track<"Youtube"> {
     constructor();
     from(video_details: any, author: any, streams: any): this;
     from_search(track: any): this;

@@ -140,6 +140,9 @@ class SoundcloudResults extends TrackResults {
     }
 }
 
+/**
+ * @extends {TrackPlaylist<'Soundcloud'>}
+ */
 class SoundcloudPlaylist extends TrackPlaylist {
     /** @type {string | undefined} */
     id
@@ -362,13 +365,17 @@ var api = new (class SoundcloudAPI {
         }
 
         try {
+            // @ts-ignore
             body = await res.text()
         } catch (e) {
+            // @ts-ignore
             if (!res.ok) throw new SourceError.INTERNAL_ERROR(null, e)
             throw new SourceError.NETWORK_ERROR(null, e)
         }
 
+        // @ts-ignore
         if (res.status == 404) throw new SourceError.NOT_FOUND('Not found')
+        // @ts-ignore
         if (!res.ok) throw new SourceError.INTERNAL_ERROR(null, new Error(body))
         try {
             body = JSON.parse(body)
@@ -485,6 +492,7 @@ var api = new (class SoundcloudAPI {
             location = res.headers.get('Location')
 
             try {
+                // @ts-ignore
                 location = new URL(location, 'https://on.soundcloud.com/')
             } catch (e) {
                 throw new SourceError.INVALID_RESPONSE('Invalid redirect URL', new Error('Response URL: ' + location))

@@ -47,7 +47,7 @@ declare class AppleMusicResults extends TrackResults {
     protected set_continuation(query: any, start: number): void;
     next(): Promise<AppleMusicResults | null>;
 }
-declare class AppleMusicPlaylist extends TrackPlaylist<any> {
+declare class AppleMusicPlaylist extends TrackPlaylist<"AppleMusic"> {
     constructor(arrayLength?: number | undefined);
     constructor(arrayLength: number);
     constructor(...items: any[]);

@@ -13,7 +13,9 @@ export namespace api {
             innertube_key: string;
             readonly cookie: string;
             readonly sapisid: string;
-            api_request(path: any, body: any, query: any): Promise<{
+            api_request(path: string, body?: {
+                [key: string]: any;
+            } | undefined, query?: string | undefined): Promise<{
                 [key: string]: any;
             }>;
             search(search: string, continuation: any, params: any): Promise<{

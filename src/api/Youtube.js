@@ -5,12 +5,23 @@ const SourceError = require('../SourceError')
 const { Track, TrackImage, TrackResults, TrackPlaylist, TrackStream, TrackStreams } = require('../Track')
 const { gen_playlist_continuation, gen_search_options, playlist_next_offset } = require('../../proto/youtube')
 
+/**
+ * 
+ * @param {any[]} array 
+ * @param {string} prop 
+ * @returns {any | null}
+ */
 function get_property(array, prop) {
     if (!(array instanceof Array)) return null
     for (var item of array) if (item && item[prop]) return item[prop]
     return null
 }
 
+/**
+ * 
+ * @param {any} txt 
+ * @returns 
+ */
 function text(txt) {
     if (!txt) return null
     if (txt.simpleText) return txt.simpleText
@@ -18,8 +29,14 @@ function text(txt) {
     return ''
 }
 
+/**
+ * 
+ * @param {unknown} st 
+ * @returns {void}
+ */
 function check_playable(st) {
     if (!st) return
+    // @ts-ignore
     var { status, reason } = st
 
     if (!status) return
@@ -29,25 +46,41 @@ function check_playable(st) {
         case 'error':
             if (reason == 'Video unavailable') throw new SourceError.NOT_FOUND('Video not found')
         case 'unplayable':
+            // @ts-ignore
             throw new SourceError.UNPLAYABLE(reason || status)
         case 'login_required':
+            // @ts-ignore
             throw new SourceError.UNPLAYABLE('Video is age restricted')
         case 'content_check_required':
+            // @ts-ignore
             throw new SourceError.UNPLAYABLE('Content check required')
         case 'age_check_required':
+            // @ts-ignore
             throw new SourceError.UNPLAYABLE('Age check required')
         default:
+            // @ts-ignore
             throw new SourceError.UNPLAYABLE(reason || status)
     }
 }
 
+/**
+ * 
+ * @param {string} n 
+ * @returns 
+ */
 function number(n) {
+    // @ts-ignore
     n = parseInt(n, 10)
 
     if (Number.isFinite(n)) return n
     return 0
 }
 
+/**
+ * 
+ * @param {string} str 
+ * @returns 
+ */
 function parse_timestamp(str) {
     var tokens = str.split(':').map((token) => parseInt(token))
 
@@ -63,10 +96,18 @@ function parse_timestamp(str) {
     return seconds
 }
 
+/**
+ * 
+ * @param {string} video_id 
+ * @returns 
+ */
 function youtube_thumbnails(video_id) {
     return [new TrackImage(`https://i.ytimg.com/vi/${video_id}/mqdefault.jpg`, 320, 180)]
 }
 
+/**
+ * @extends {Track<'Youtube'>}
+ */
 class YoutubeTrack extends Track {
     constructor() {
         super('Youtube')
@@ -845,6 +886,13 @@ var music = new (class YoutubeMusic {
         return api.sapisid
     }
 
+    /**
+     * 
+     * @param {string} path 
+     * @param {{[key: string]: any}} [body] 
+     * @param {string} [query] 
+     * @returns {Promise<{[key: string]: any}>}
+     */
     async api_request(path, body, query) {
         return api.api_request.call(this, path, body, query, 'music')
     }

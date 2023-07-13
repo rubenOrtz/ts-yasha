@@ -24,11 +24,12 @@ class AppleMusicTrack extends Track {
      */
     gen_image(url, artist) {
         const dim = artist ? 220 : 486
-        // @ts-ignore
         return [
             new TrackImage(
                 url
+                    // @ts-ignore
                     .replaceAll('{w}', dim)
+                    // @ts-ignore
                     .replaceAll('{h}', dim)
                     .replaceAll('{c}', artist ? 'sr' : 'bb')
                     .replaceAll('{f}', 'webp'),
@@ -115,6 +116,9 @@ class AppleMusicResults extends TrackResults {
     }
 }
 
+/**
+ * @extends {TrackPlaylist<'AppleMusic'>}
+ */
 class AppleMusicPlaylist extends TrackPlaylist {
     /** @type {string | undefined} */
     type
@@ -269,13 +273,17 @@ const api = new (class AppleMusicAPI {
         }
 
         try {
+            // @ts-ignore
             body = await res.text()
         } catch (e) {
+            // @ts-ignore
             if (!res.ok) throw new SourceError.INTERNAL_ERROR(null, e)
             throw new SourceError.NETWORK_ERROR(null, e)
         }
 
+        // @ts-ignore
         if (res.status == 404) throw new SourceError.NOT_FOUND()
+        // @ts-ignore
         if (!res.ok) throw new SourceError.INTERNAL_ERROR(null, new Error(body))
         try {
             body = JSON.parse(body)
