@@ -93,20 +93,6 @@ class FileTrack extends Track {
     }
 }
 
-class FilePlaylist extends TrackPlaylist {
-    /**
-     *
-     * @param {string} url
-     * @param {boolean} [isfile]
-     * @returns {this}
-     */
-    from(url, isfile) {
-        this.push(new FileTrack(url, isfile))
-
-        return this
-    }
-}
-
 class File {
     // ! This is an a modification of the original File.js file from the project.
     Track = FileTrack
@@ -114,33 +100,29 @@ class File {
     /**
      *
      * @param {string} url
-     * @returns {Promise<FileTrack | null>}
+     * @returns {Promise<never>}
      */
     async get(url) {
-        return Source.File.resolve(url)
+        throw new Error('Unsupported')
     }
 
     /**
      *
      * @param {string} url
-     * @returns {Promise<FileStream | null>}
+     * @returns {Promise<never>}
      */
     async get_streams(url) {
-        const resolved = await Source.File.resolve(url)
-        if (resolved) return new FileStream(resolved.id, resolved.isLocalFile)
-        return null
+        throw new Error('Unsupported')
     }
 
     /**
      *
      * @param {string} url
      * @param {number} [length]
-     * @returns {Promise<FilePlaylist>}
+     * @returns {Promise<never>}
      */
     async playlist(url, length) {
-        const track = await this.get(url)
-        if (!track) return new FilePlaylist()
-        return new FilePlaylist().setFirstTrack(track)
+        throw new Error('Unsupported')
     }
 
     /**
