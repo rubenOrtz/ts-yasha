@@ -3,7 +3,7 @@ declare const api: {
     Track: typeof SpotifyTrack;
     Results: typeof SpotifyResults;
     Playlist: typeof SpotifyPlaylist;
-    token: any;
+    token: string | null;
     reloading: Promise<void> | null;
     needs_reload: boolean;
     account_data: {};

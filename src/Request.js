@@ -3,13 +3,26 @@ const SourceError = require('./SourceError');
 const httpsAgent = new (require('https').Agent)({keepAlive: true});
 const nfetch = require('node-fetch');
 
+/**
+ * 
+ * @param {string} url 
+ * @param {import('node-fetch').RequestInit} [opts] 
+ * @returns {Promise<import('node-fetch').Response>}
+ */
 async function fetch(url, opts = {}){
 	opts.agent = httpsAgent;
 
+	// @ts-ignore
 	return nfetch(url, opts);
 }
 
 module.exports = new class{
+	/**
+	 * 
+	 * @param {string} url 
+	 * @param {import('node-fetch').RequestInit} [options] 
+	 * @returns {Promise<{res: import('node-fetch').Response}>}
+	 */
 	async getResponse(url, options){
 		var res;
 
@@ -22,6 +35,12 @@ module.exports = new class{
 		return {res};
 	}
 
+	/**
+	 * 
+	 * @param {string} url 
+	 * @param {import('node-fetch').RequestInit} [options] 
+	 * @returns {Promise<{res: import('node-fetch').Response, body: string}>}
+	 */
 	async get(url, options){
 		const {res} = await this.getResponse(url, options);
 
@@ -40,6 +59,12 @@ module.exports = new class{
 		return {res, body};
 	}
 
+	/**
+	 * 
+	 * @param {string} url 
+	 * @param {import('node-fetch').RequestInit} [options] 
+	 * @returns {Promise<{res: import('node-fetch').Response; body: {[key: string]:string}}>}
+	 */
 	async getJSON(url, options){
 		const data = await this.get(url, options);
 
@@ -49,9 +74,16 @@ module.exports = new class{
 			throw new SourceError.INVALID_RESPONSE(null, e);
 		}
 
+		// @ts-ignore
 		return data;
 	}
 
+	/**
+	 * 
+	 * @param {string} url 
+	 * @param {import('node-fetch').RequestInit} [options] 
+	 * @returns {Promise<{res: import('node-fetch').Response; body: Buffer}>}
+	 */
 	async getBuffer(url, options){
 		const {res} = await this.getResponse(url, options);
 

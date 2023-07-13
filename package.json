@@ -18,6 +18,7 @@
 		"type": "tsc || rm -r tmp"
 	},
 	"devDependencies": {
+		"@types/node-fetch": "^2.6.4",
 		"typescript": "5.1.3"
 	}
 }

@@ -470,7 +470,7 @@ export namespace api {
         Track: typeof import("./src/api/Spotify").Track;
         Results: typeof import("./src/api/Spotify").Results;
         Playlist: typeof import("./src/api/Spotify").Playlist;
-        token: any;
+        token: string | null;
         reloading: Promise<void> | null;
         needs_reload: boolean;
         account_data: {};

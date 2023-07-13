@@ -1,18 +1,21 @@
 declare const _exports: {
-    getResponse(url: any, options: any): Promise<{
-        res: any;
+    getResponse(url: string, options?: nfetch.RequestInit | undefined): Promise<{
+        res: import('node-fetch').Response;
     }>;
-    get(url: any, options: any): Promise<{
-        res: any;
-        body: any;
+    get(url: string, options?: nfetch.RequestInit | undefined): Promise<{
+        res: import('node-fetch').Response;
+        body: string;
     }>;
-    getJSON(url: any, options: any): Promise<{
-        res: any;
-        body: any;
+    getJSON(url: string, options?: nfetch.RequestInit | undefined): Promise<{
+        res: import('node-fetch').Response;
+        body: {
+            [key: string]: string;
+        };
     }>;
-    getBuffer(url: any, options: any): Promise<{
-        res: any;
-        body: any;
+    getBuffer(url: string, options?: nfetch.RequestInit | undefined): Promise<{
+        res: import('node-fetch').Response;
+        body: Buffer;
     }>;
 };
 export = _exports;
+import nfetch = require("node-fetch");

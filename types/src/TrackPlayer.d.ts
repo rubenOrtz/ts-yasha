@@ -1,3 +1,4 @@
+/// <reference types="discord.js" />
 export = TrackPlayer;
 declare class TrackPlayer extends EventEmitter {
     constructor(options?: {
@@ -60,7 +61,7 @@ declare class TrackPlayer extends EventEmitter {
     cleanup(): void;
     destroy(): void;
 }
-import EventEmitter = require("events");
+import EventEmitter = require("node:events");
 declare class Subscription {
     constructor(connection: any, player: any);
     connection: any;

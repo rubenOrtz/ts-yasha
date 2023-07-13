@@ -1,7 +1,7 @@
 export = VoiceConnection;
 declare class VoiceConnection extends voice.VoiceConnection {
     static disconnect_reason(reason: any): "Adapter unavailable" | "Endpoint removed" | "WebSocket closed" | "Manual disconnect" | undefined;
-    static connect(channel: any, options?: {}): Promise<any>;
+    static connect(channel: import('discord.js').VoiceChannel, options?: Partial<import('@discordjs/voice').JoinConfig>): Promise<VoiceConnection>;
     static get(guild: any): any;
     static disconnect(guild: any, options: any): boolean;
     constructor(channel: any, options: any);

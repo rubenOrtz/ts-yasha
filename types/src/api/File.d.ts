@@ -3,9 +3,9 @@ export = _exports;
 export { FileTrack as Track };
 declare class File {
     Track: typeof FileTrack;
-    get(url: string): Promise<FileTrack | null>;
-    get_streams(url: string): Promise<FileStream | null>;
-    playlist(url: string, length?: number | undefined): Promise<FilePlaylist>;
+    get(url: string): Promise<never>;
+    get_streams(url: string): Promise<never>;
+    playlist(url: string, length?: number | undefined): Promise<never>;
     create(url: string, isfile?: boolean | undefined): FileTrack;
 }
 declare class FileTrack extends Track<"File"> {
@@ -17,17 +17,4 @@ declare class FileTrack extends Track<"File"> {
     fetch(): Promise<never>;
     get url(): string;
 }
-declare class FileStream extends TrackStream {
-    constructor(url: string, isfile: boolean);
-    private is_file;
-    equals(other: FileStream): boolean;
-}
-declare class FilePlaylist extends TrackPlaylist<any> {
-    constructor(arrayLength?: number | undefined);
-    constructor(arrayLength: number);
-    constructor(...items: any[]);
-    from(url: string, isfile?: boolean | undefined): this;
-}
 import { Track } from "../Track";
-import { TrackStream } from "../Track";
-import { TrackPlaylist } from "../Track";
