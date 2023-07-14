@@ -1,21 +1,30 @@
 export = VoiceConnection;
 declare class VoiceConnection extends voice.VoiceConnection {
-    static disconnect_reason(reason: any): "Adapter unavailable" | "Endpoint removed" | "WebSocket closed" | "Manual disconnect" | undefined;
+    static disconnect_reason(reason: voice.VoiceConnectionDisconnectReason): "Adapter unavailable" | "Endpoint removed" | "WebSocket closed" | "Manual disconnect";
     static connect(channel: import('discord.js').VoiceChannel, options?: Partial<import('@discordjs/voice').JoinConfig>): Promise<VoiceConnection>;
-    static get(guild: any): any;
-    static disconnect(guild: any, options: any): boolean;
-    constructor(channel: any, options: any);
-    guild: any;
+    static get(guild: import('discord.js').Guild): VoiceConnection;
+    static disconnect(guild: import('discord.js').Guild, options: Partial<voice.JoinConfig>): boolean;
+    constructor(channel: import('discord.js').VoiceChannel, options: voice.JoinConfig);
+    guild: import("discord.js").Guild;
     connect_timeout: any;
     connected: boolean;
-    rejoin_id(channelId: any): void;
-    rejoin(channel: any): void;
+    rejoin_id(channelId: string): void;
+    override rejoin(channel: import('discord.js').VoiceChannel): void;
     ready(): boolean;
     addStatePacket(packet: any): void;
-    onNetworkingError(error: any): void;
-    handle_state_change(state: any): void;
-    set state(arg: any);
-    get state(): any;
+    onNetworkingError(error: Error): void;
+    handle_state_change(state: {
+        status: voice.VoiceConnectionStatus;
+        reason: voice.VoiceConnectionDisconnectReason;
+    }): void;
+    set state(arg: {
+        status: voice.VoiceConnectionStatus;
+        reason: voice.VoiceConnectionDisconnectReason;
+    });
+    get state(): {
+        status: voice.VoiceConnectionStatus;
+        reason: voice.VoiceConnectionDisconnectReason;
+    };
     disconnect(): void;
     await_connection(): Promise<void>;
     promise: Promise<any> | null | undefined;
@@ -28,3 +37,4 @@ declare namespace VoiceConnection {
 }
 import voice = require("@discordjs/voice");
 declare const VoiceConnectionStatus: typeof voice.VoiceConnectionStatus;
+declare const VoiceConnectionDisconnectReason: typeof voice.VoiceConnectionDisconnectReason;
