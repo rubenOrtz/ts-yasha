@@ -18,13 +18,13 @@ export namespace api {
             } | undefined, query?: string | undefined): Promise<{
                 [key: string]: any;
             }>;
-            search(search: string, continuation: any, params: any): Promise<{
+            search(search: string, continuation: any, params?: any): Promise<{
                 [n: number]: any;
                 process(body: any): void;
                 process_section(section: any): void;
                 top_result: any;
                 songs: any[] | undefined;
-                from_section(list: any): any[];
+                from_section(list: any[]): any[];
                 process_once(body: any): void;
                 extract_tracks(list: any): void;
                 set_continuation(cont: any): void;
@@ -224,7 +224,7 @@ export namespace api {
             };
             at(index: number): any;
         }>;
-        playlist_once(id: any, start?: number): Promise<import("./src/api/Youtube").Playlist>;
+        playlist_once(id: string, start?: number | undefined): Promise<import("./src/api/Youtube").Playlist>;
         playlist(id: string, limit?: number | undefined): Promise<import("./src/api/Youtube").Playlist>;
         search(query: unknown, continuation?: unknown): Promise<import("./src/api/Youtube").Results>;
         set_cookie(cookiestr: string): void;

@@ -174,7 +174,7 @@ class Track {
      * @param {string} id
      * @param {string} title
      * @param {number} duration
-     * @param {*} thumbnails
+     * @param {TrackImage[]} thumbnails
      * @returns {this}
      */
     setMetadata(id, title, duration, thumbnails) {

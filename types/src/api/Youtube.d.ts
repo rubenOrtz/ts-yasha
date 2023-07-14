@@ -18,7 +18,7 @@ declare const api: {
         } | undefined, query?: string | undefined): Promise<{
             [key: string]: any;
         }>;
-        search(search: string, continuation: any, params: any): Promise<YoutubeMusicResults>;
+        search(search: string, continuation: any, params?: any): Promise<YoutubeMusicResults>;
     };
     innertube_client: {
         clientName: string;
@@ -36,13 +36,13 @@ declare const api: {
     }>;
     get(id: string): Promise<YoutubeTrack>;
     get_streams(id: string): Promise<YoutubeStreams>;
-    playlist_once(id: any, start?: number): Promise<YoutubePlaylist>;
+    playlist_once(id: string, start?: number | undefined): Promise<YoutubePlaylist>;
     playlist(id: string, limit?: number | undefined): Promise<YoutubePlaylist>;
     search(query: unknown, continuation?: unknown): Promise<YoutubeResults>;
     set_cookie(cookiestr: string): void;
     string_word_match(big: string, small: string): number;
     track_match_score(track: any, result: any): number;
-    track_match_best(results: any, track: any): any;
+    track_match_best(results: any, track: any): any | null;
     track_match_best_result(results: any, track: any): any;
     track_match_lookup(track: any): Promise<any>;
     track_match(track: any): Promise<YoutubeStreams>;
@@ -57,7 +57,7 @@ declare class YoutubeTrack extends Track<"Youtube"> {
     get url(): string;
 }
 declare class YoutubeResults extends TrackResults {
-    process(body: any): void;
+    process(body: any[]): void;
     extract_tracks(list: any): void;
     set_continuation(cont: any): void;
     continuation: any;
@@ -74,11 +74,11 @@ declare class YoutubePlaylist extends TrackPlaylist<"Youtube"> {
     get url(): string;
 }
 declare class YoutubeMusicResults extends TrackResults {
-    process(body: any): void;
+    process(body: any | any[]): void;
     process_section(section: any): void;
     top_result: any;
     songs: any[] | undefined;
-    from_section(list: any): any[];
+    from_section(list: any[]): any[];
     process_once(body: any): void;
     extract_tracks(list: any): void;
     set_continuation(cont: any): void;

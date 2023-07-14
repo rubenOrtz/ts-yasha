@@ -99,7 +99,7 @@ function parse_timestamp(str) {
 /**
  * 
  * @param {string} video_id 
- * @returns 
+ * @returns {TrackImage[]}
  */
 function youtube_thumbnails(video_id) {
     return [new TrackImage(`https://i.ytimg.com/vi/${video_id}/mqdefault.jpg`, 320, 180)]
@@ -113,17 +113,30 @@ class YoutubeTrack extends Track {
         super('Youtube')
     }
 
+    /**
+     * 
+     * @param {*} video_details 
+     * @param {*} author 
+     * @param {*} streams 
+     * @returns 
+     */
     from(video_details, author, streams) {
         return this.setOwner(text(author.title), TrackImage.from(author.thumbnail.thumbnails))
             .setMetadata(
                 video_details.videoId,
                 video_details.title,
+                // @ts-ignore
                 number(video_details.lengthSeconds),
                 youtube_thumbnails(video_details.videoId),
             )
             .setStreams(streams)
     }
 
+    /**
+     * 
+     * @param {*} track 
+     * @returns {this}
+     */
     from_search(track) {
         var thumbnails
 
@@ -138,22 +151,35 @@ class YoutubeTrack extends Track {
         )
     }
 
+    /**
+     * 
+     * @param {*} track 
+     * @returns {this}
+     */
     from_playlist(track) {
         return this.setOwner(text(track.shortBylineText), null)
             .setMetadata(
                 track.videoId,
                 text(track.title),
+                // @ts-ignore
                 number(track.lengthSeconds),
                 youtube_thumbnails(track.videoId),
             )
             .setPlayable(track.isPlayable ? true : false)
     }
 
+    /**
+     * 
+     * @returns {Promise<YoutubeTrack>
+}
+     */
     async fetch() {
+        // @ts-ignore
         return await api.get(this.id)
     }
 
     async getStreams() {
+        // @ts-ignore
         return await api.get_streams(this.id)
     }
 
@@ -163,6 +189,10 @@ class YoutubeTrack extends Track {
 }
 
 class YoutubeResults extends TrackResults {
+    /**
+     * 
+     * @param {any[]} body 
+     */
     process(body) {
         for (var item of body) {
             if (item.continuationItemRenderer)
@@ -171,10 +201,18 @@ class YoutubeResults extends TrackResults {
         }
     }
 
+    /**
+     * 
+     * @param {*} list 
+     */
     extract_tracks(list) {
         for (var video of list) if (video.videoRenderer) this.push(new YoutubeTrack().from_search(video.videoRenderer))
     }
 
+    /**
+     * 
+     * @param {*} cont 
+     */
     set_continuation(cont) {
         this.continuation = cont
     }
@@ -208,6 +246,7 @@ class YoutubePlaylist extends TrackPlaylist {
     }
 
     async next() {
+        // @ts-ignore
         if (this.next_offset) return await api.playlist_once(this.id, this.next_offset)
         return null
     }
@@ -291,6 +330,7 @@ class YoutubeStreams extends TrackStreams {
             else stream.setTracks(false, true)
             stream.setBitrate(fmt.bitrate)
             stream.setMetadata(mime[2], mime[3])
+            // @ts-ignore
             stream.default_audio_track = fmt.audioTrack?.audioIsDefault
 
             this.push(stream)
@@ -370,13 +410,16 @@ const api = new (class YoutubeAPI {
         var body
 
         try {
+            // @ts-ignore
             body = await res.text()
         } catch (e) {
             if (!res.ok) throw new SourceError.INTERNAL_ERROR(null, e)
             throw new SourceError.NETWORK_ERROR(null, e)
         }
 
+        // @ts-ignore
         if (res.status >= 400 && res.status < 500) throw new SourceError.NOT_FOUND(null, new Error(body))
+        // @ts-ignore
         if (!res.ok) throw new SourceError.INTERNAL_ERROR(null, new Error(body))
         try {
             // @ts-ignore
@@ -450,6 +493,12 @@ const api = new (class YoutubeAPI {
         }
     }
 
+    /**
+     * 
+     * @param {string} id 
+     * @param {number} [start] 
+     * @returns {Promise<YoutubePlaylist>}
+     */
     async playlist_once(id, start = 0) {
         var results = new YoutubePlaylist()
         var data = await this.api_request('browse', { continuation: gen_playlist_continuation(id, start) })
@@ -524,6 +573,7 @@ const api = new (class YoutubeAPI {
         var results = new YoutubeResults()
 
         try {
+            // @ts-ignore
             results.process(body)
         } catch (e) {
             throw new SourceError.INTERNAL_ERROR(null, e)
@@ -549,6 +599,7 @@ const api = new (class YoutubeAPI {
         var sapisid = null
 
         for (var cookie of cookies) {
+            // @ts-ignore
             cookie = cookie.trim().split('=')
 
             if (cookie[0] == '__Secure-3PAPISID') sapisid = cookie[1]
@@ -593,6 +644,12 @@ const api = new (class YoutubeAPI {
         return 0
     }
 
+    /**
+     * 
+     * @param {*} track 
+     * @param {*} result 
+     * @returns {number}
+     */
     track_match_score(track, result) {
         var score = 0
 
@@ -629,6 +686,12 @@ const api = new (class YoutubeAPI {
         return score / 15
     }
 
+    /**
+     * 
+     * @param {*} results 
+     * @param {*} track 
+     * @returns {any | null}
+     */
     track_match_best(results, track) {
         for (var i = 0; i < results.length; i++) {
             results[i] = {
@@ -637,12 +700,20 @@ const api = new (class YoutubeAPI {
             }
         }
 
+        // @ts-ignore
         results = results.filter((match) => match.score >= 0.5)
+        // @ts-ignore
         results.sort((a, b) => b.score - a.score)
 
         return results.length ? results[0].track : null
     }
 
+    /**
+     * 
+     * @param {*} results 
+     * @param {*} track 
+     * @returns {any}
+     */
     track_match_best_result(results, track) {
         var list = [],
             result
@@ -655,13 +726,21 @@ const api = new (class YoutubeAPI {
         return this.track_match_best(results, track)
     }
 
+    /**
+     * 
+     * @param {*} track 
+     * @returns 
+     */
     async track_match_lookup(track) {
         var title = [...track.artists, track.title].join(' ')
+        // @ts-ignore
         var results = await music.search(title)
         var expmatch = results.filter((t) => t.explicit == track.explicit)
 
         if (results.top_result && results.top_result.explicit == track.explicit)
+        // @ts-ignore
             expmatch.top_result = results.top_result
+            // @ts-ignore
         if (results.songs) expmatch.songs = results.songs.filter((t) => t.explicit == track.explicit)
         var match = this.track_match_best_result(expmatch, track)
 
@@ -669,6 +748,7 @@ const api = new (class YoutubeAPI {
         match = this.track_match_best_result(results, track)
 
         if (match) return match
+        // @ts-ignore
         results = await this.search(title)
 
         return this.track_match_best_result(results, track)
@@ -699,16 +779,28 @@ const api = new (class YoutubeAPI {
             return result
         }
 
+        // @ts-ignore
         throw new SourceError.UNPLAYABLE('Could not find streams for this track')
     }
 })()
 
+/**
+ * 
+ */
 class YoutubeMusicTrack extends YoutubeTrack {
     constructor() {
+        // @ts-ignore
         super('Youtube')
     }
 
-    parse_metadata(has_type, metadata) {
+    /**
+     * 
+     * @param {boolean} [has_type] 
+     * @param {any[]} [metadata] 
+     * @returns {{ type: string, artists: any, duration?: number }}
+     */
+    // ! this code is a modification 
+    parse_metadata(has_type, metadata = []) {
         var type,
             artists = [],
             duration
@@ -745,6 +837,13 @@ class YoutubeMusicTrack extends YoutubeTrack {
         return { type, artists, duration }
     }
 
+    /**
+     * 
+     * @param {*} track 
+     * @param {boolean} [has_type] 
+     * @returns 
+     */
+    // @ts-ignore
     from_search(track, has_type) {
         if (!track.playlistItemData) return
         var { type, artists, duration } = this.parse_metadata(
@@ -777,17 +876,23 @@ class YoutubeMusicTrack extends YoutubeTrack {
         return this.setOwner(artists.join(', '), null).setMetadata(
             track.playlistItemData.videoId,
             text(track.flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text),
+            // @ts-ignore
             duration,
             youtube_thumbnails(track.playlistItemData.videoId),
         )
     }
-
+    // @ts-ignore
     from_section(track) {
         return this.from_search(track, true)
     }
 }
 
 class YoutubeMusicResults extends TrackResults {
+    /**
+     * 
+     * @param {any | any[]} body 
+     * @returns 
+     */
     process(body) {
         if (body instanceof Array) {
             for (var section of body) if (section.musicShelfRenderer) this.process_section(section.musicShelfRenderer)
@@ -797,6 +902,11 @@ class YoutubeMusicResults extends TrackResults {
         this.process_once(body)
     }
 
+    /**
+     * 
+     * @param {*} section 
+     * @returns {void}
+     */
     process_section(section) {
         var section_name = text(section.title)
 
@@ -822,6 +932,11 @@ class YoutubeMusicResults extends TrackResults {
         }
     }
 
+    /**
+     * 
+     * @param {any[]} list 
+     * @returns 
+     */
     from_section(list) {
         var tracks = []
 
@@ -834,6 +949,10 @@ class YoutubeMusicResults extends TrackResults {
         return tracks
     }
 
+    /**
+     * 
+     * @param {*} body 
+     */
     process_once(body) {
         this.extract_tracks(body.contents)
 
@@ -841,6 +960,10 @@ class YoutubeMusicResults extends TrackResults {
             this.set_continuation(body.continuations[0].nextContinuationData.continuation)
     }
 
+    /**
+     * 
+     * @param {*} list 
+     */
     extract_tracks(list) {
         for (var video of list)
             if (video.musicResponsiveListItemRenderer) {
@@ -850,10 +973,19 @@ class YoutubeMusicResults extends TrackResults {
             }
     }
 
+    /**
+     * 
+     * @param {*} cont 
+     */
     set_continuation(cont) {
         this.continuation = cont
     }
 
+    /**
+     * 
+     * @param {*} query 
+     * @param {*} params 
+     */
     set_browse(query, params) {
         this.browse = params
         this.query = query
@@ -861,6 +993,7 @@ class YoutubeMusicResults extends TrackResults {
 
     async next() {
         if (this.browse) return await music.search(this.query, null, this.browse)
+        // @ts-ignore
         if (this.continuation) return await music.search(null, this.continuation)
         return null
     }
@@ -901,7 +1034,7 @@ var music = new (class YoutubeMusic {
      * 
      * @param {string} search 
      * @param {*} continuation 
-     * @param {*} params 
+     * @param {*} [params] 
      * @returns 
      */
     async search(search, continuation, params) {

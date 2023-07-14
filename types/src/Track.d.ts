@@ -10,7 +10,7 @@ export class Track<T> {
     title: string | undefined;
     thumbnails: any | undefined;
     setOwner(name: string, icons: any): this;
-    setMetadata(id: string, title: string, duration: number, thumbnails: any): this;
+    setMetadata(id: string, title: string, duration: number, thumbnails: TrackImage[]): this;
     setStreams(streams: any): this;
     setPlayable(playable: boolean): this;
     fetch(): Promise<unknown>;
