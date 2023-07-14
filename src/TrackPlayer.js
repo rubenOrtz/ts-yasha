@@ -1,9 +1,12 @@
 const EventEmitter = require('events');
 
 const VoiceConnection = require('./VoiceConnection');
+// @ts-ignore
 const AudioPlayer = require('sange');
 
+		// @ts-ignore
 const sodium = require('sodium');
+const { TrackStream, TrackStreams } = require('./Track');
 
 const random_bytes = Buffer.alloc(24);
 const connection_nonce = Buffer.alloc(24);
@@ -28,12 +31,17 @@ const EncryptionMode = {
 };
 
 class Subscription{
+	/**
+	 * @param {VoiceConnection} connection
+	 * @param {TrackPlayer} player
+	 */
 	constructor(connection, player){
 		this.connection = connection;
 		this.player = player;
 	}
 
 	unsubscribe(){
+		// @ts-ignore
 		this.connection.onSubscriptionRemoved(this);
 		this.player.unsubscribe(this);
 	}
@@ -48,7 +56,7 @@ class TrackPlayer extends EventEmitter{
 	external_packet_send = false
 	/** @type {number} */
 	last_error = 0
-	/** @type {ReturnType<typeof import('./Source').resolve> | null} */
+	/** @type {Awaited<ReturnType<typeof import('./Source').resolve>> | null} */
 	track
 	/** @type {unknown} */
 	stream
@@ -94,6 +102,11 @@ class TrackPlayer extends EventEmitter{
 		this.player = null;
 	}
 
+	/**
+	 * 
+	 * @param {*} old 
+	 * @param {*} cur 
+	 */
 	onstatechange(old, cur){
 		if(cur.status == VoiceConnection.Status.Ready)
 			this.init_secretbox();
@@ -101,6 +114,11 @@ class TrackPlayer extends EventEmitter{
 			this.player.ffplayer.pipe();
 	}
 
+	/**
+	 * 
+	 * @param {*} connection 
+	 * @returns {Subscription}
+	 */
 	subscribe(connection){
 		if(this.external_encrypt){
 			if(this.subscriptions.length)
@@ -117,6 +135,11 @@ class TrackPlayer extends EventEmitter{
 		return subscription;
 	}
 
+	/**
+	 * 
+	 * @param {Subscription} subscription 
+	 * @returns {void}
+	 */
 	unsubscribe(subscription){
 		var index = this.subscriptions.indexOf(subscription);
 
@@ -130,11 +153,20 @@ class TrackPlayer extends EventEmitter{
 			this.destroy();
 	}
 
+	/**
+	 * 
+	 */
 	unsubscribe_all(){
 		while(this.subscriptions.length)
 			this.subscriptions[0].unsubscribe();
 	}
 
+	/**
+	 * 
+	 * @param {*} packet 
+	 * @param {number} length 
+	 * @param {number} frame_size
+	 */
 	onpacket(packet, length, frame_size){
 		this.stop_silence_frames();
 
@@ -150,9 +182,17 @@ class TrackPlayer extends EventEmitter{
 		this.start_silence_frames();
 	}
 
+	/**
+	 * 
+	 * @param {*} error 
+	 * @param {*} code 
+	 * @param {*} retryable 
+	 * @returns {void}
+	 */
 	onerror(error, code, retryable){
 		if(this.error(error, retryable))
 			return;
+			// @ts-ignore
 		this.track.streams = null;
 		this.create_player(this.getTime());
 		this.start();
@@ -167,10 +207,12 @@ class TrackPlayer extends EventEmitter{
 	}
 
 	get_connection_data(){
+		// @ts-ignore
 		return this.get_connection().state.networking.state.connectionData;
 	}
 
 	get_connection_udp(){
+		// @ts-ignore
 		return this.get_connection().state.networking.state.udp;
 	}
 
@@ -228,10 +270,17 @@ class TrackPlayer extends EventEmitter{
 			this.player.ffplayer.pipe();
 	}
 
+	/**
+	 * 
+	 * @param {number} start_time 
+	 * @returns 
+	 */
 	create_player(start_time){
 		this.destroy_player();
 
+		// @ts-ignore
 		if(this.track.player){
+			// @ts-ignore
 			this.player = new this.track.player(this.external_encrypt ? new Uint8Array(4096) : audio_output, false);
 			this.player.setTrack(this.track);
 		}else{
@@ -260,10 +309,13 @@ class TrackPlayer extends EventEmitter{
 	async load_streams(){
 		var streams, play_id = this.play_id;
 
+		// @ts-ignore
 		if(this.track.streams && !this.track.streams.expired())
+		// @ts-ignore
 			streams = this.track.streams;
 		else{
 			try{
+				// @ts-ignore
 				streams = await this.track.getStreams();
 			}catch(error){
 				if(this.play_id == play_id)
@@ -273,6 +325,7 @@ class TrackPlayer extends EventEmitter{
 
 			if(this.play_id != play_id)
 				return false;
+				// @ts-ignore
 			this.track.streams = streams;
 		}
 
@@ -284,8 +337,10 @@ class TrackPlayer extends EventEmitter{
 			return false;
 		}
 
+		// @ts-ignore
 		if(!this.stream.url){
 			try{
+				// @ts-ignore
 				this.stream.url = await this.stream.getUrl();
 			}catch(error){
 				if(this.play_id == play_id)
@@ -299,7 +354,12 @@ class TrackPlayer extends EventEmitter{
 
 		return true;
 	}
-
+	/**
+	 * 
+	 * @param {Buffer} buffer 
+	 * @param {number} [frame_size] 
+	 * @param {boolean} [is_silence] 
+	 */
 	send(buffer, frame_size, is_silence){
 		var subscriptions = this.subscriptions, connection;
 
@@ -310,6 +370,7 @@ class TrackPlayer extends EventEmitter{
 				continue;
 			connection.setSpeaking(true);
 
+			// @ts-ignore
 			var state = connection.state.networking.state,
 				connection_data = state.connectionData,
 				mode = connection_data.encryption_mode;
@@ -397,6 +458,7 @@ class TrackPlayer extends EventEmitter{
 			data.sequence = box.sequence;
 		}
 
+		// @ts-ignore
 		this.silence_frames_interval = setInterval(() => {
 			this.silence_frames_left--;
 
@@ -410,6 +472,7 @@ class TrackPlayer extends EventEmitter{
 			}
 
 			if(!this.silence_frames_left){
+				// @ts-ignore
 				clearInterval(this.silence_frames_interval);
 
 				this.silence_frames_interval = null;
@@ -430,6 +493,12 @@ class TrackPlayer extends EventEmitter{
 		this.silence_frames_left = 5;
 	}
 
+	/**
+	 * 
+	 * @param {Error} error 
+	 * @param {boolean} [retryable] 
+	 * @returns 
+	 */
 	error(error, retryable){
 		if(!retryable || Date.now() - this.last_error < ERROR_INTERVAL){
 			this.destroy_player();
@@ -443,6 +512,11 @@ class TrackPlayer extends EventEmitter{
 		return false;
 	}
 
+	/**
+	 * 
+	 * @param {TrackStreams} streams 
+	 * @returns 
+	 */
 	get_best_stream_one(streams){
 		var opus = [], audio = [], other = [];
 
@@ -460,10 +534,13 @@ class TrackPlayer extends EventEmitter{
 		}
 
 		if(opus.length)
+		// @ts-ignore
 			streams = opus;
 		else if(audio.length)
+		// @ts-ignore
 			streams = audio;
 		else
+		// @ts-ignore
 			streams = other;
 		if(!streams.length)
 			return null;
@@ -472,13 +549,22 @@ class TrackPlayer extends EventEmitter{
 		});
 	}
 
+	/**
+	 * 
+	 * @param {TrackStream} streams 
+	 * @returns 
+	 */
 	get_best_stream(streams){
+		// @ts-ignore
 		var result, volume = streams.volume;
 
+		// @ts-ignore
 		streams = streams.filter((stream) => stream.audio);
+		// @ts-ignore
 		result = this.get_best_stream_one(streams.filter((stream) => stream.default_audio_track))
 
 		if(!result)
+		// @ts-ignore
 			result = this.get_best_stream_one(streams);
 		if(result)
 			result.volume = volume;
@@ -495,10 +581,12 @@ class TrackPlayer extends EventEmitter{
 		this.last_error = 0;
 
 		this.stream = null;
+		// @ts-ignore
 		this.track = track;
 
 		if(this.play_id > MAX_PLAY_ID)
 			this.play_id = 0;
+			// @ts-ignore
 		this.create_player();
 	}
 
@@ -506,8 +594,10 @@ class TrackPlayer extends EventEmitter{
 		if(!await this.load_streams() || !this.player) /* destroy could have been called while waiting */
 			return;
 		if(this.normalize_volume)
+		// @ts-ignore
 			this.player.setVolume(this.stream.volume);
 		try{
+			// @ts-ignore
 			this.player.setURL(this.stream.url, this.stream.is_file);
 			this.player.start();
 		}catch(e){
@@ -530,6 +620,11 @@ class TrackPlayer extends EventEmitter{
 		return this.player.isPaused();
 	}
 
+	/**
+	 * 
+	 * @param {boolean} paused 
+	 * @returns 
+	 */
 	setPaused(paused){
 		this.check_destroyed();
 
@@ -538,42 +633,78 @@ class TrackPlayer extends EventEmitter{
 		return this.player.setPaused(paused);
 	}
 
+	/**
+	 * 
+	 * @param {number} volume 
+	 * @returns 
+	 */
 	setVolume(volume){
 		this.check_destroyed();
 
 		return this.player.setVolume(volume);
 	}
 
+	/**
+	 * 
+	 * @param {number} bitrate 
+	 * @returns 
+	 */
 	setBitrate(bitrate){
 		this.check_destroyed();
 
 		return this.player.setBitrate(bitrate);
 	}
 
+	/**
+	 * 
+	 * @param {number} rate 
+	 * @returns 
+	 */
 	setRate(rate){
 		this.check_destroyed();
 
 		return this.player.setRate(rate);
 	}
 
+	/**
+	 * 
+	 * @param {*} tempo 
+	 * @returns 
+	 */
 	setTempo(tempo){
 		this.check_destroyed();
 
 		return this.player.setTempo(tempo);
 	}
 
+	/**
+	 * 
+	 * @param {*} depth 
+	 * @param {number} rate 
+	 * @returns 
+	 */
 	setTremolo(depth, rate){
 		this.check_destroyed();
 
 		return this.player.setTremolo(depth, rate);
 	}
 
+	/**
+	 * 
+	 * @param {*} eqs 
+	 * @returns 
+	 */
 	setEqualizer(eqs){
 		this.check_destroyed();
 
 		return this.player.setEqualizer(eqs);
 	}
 
+	/**
+	 * 
+	 * @param {number} time 
+	 * @returns 
+	 */
 	seek(time){
 		this.check_destroyed();
 		this.start_silence_frames();
