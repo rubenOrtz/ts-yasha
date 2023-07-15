@@ -1,5 +1,5 @@
 import Source from './Source.cjs'
-import Track from './Track.cjs'
+import Track from './Track.js'
 import TrackPlayer from './TrackPlayer.cjs'
 import VoiceConnection from './VoiceConnection.cjs'
 
@@ -11,11 +11,11 @@ export {
     Source,
     Track,
     TrackPlayer,
-    VoiceConnection
+    VoiceConnection,
 }
 
 export default {
     Youtube,
     Soundcloud,
-    Spotify
+    Spotify,
 }

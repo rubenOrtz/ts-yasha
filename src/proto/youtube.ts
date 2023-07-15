@@ -57,7 +57,7 @@ export function genPlaylistContinuation (id: string, offset: number): string {
     return binaryToB64url(p.serializeBinary())
 }
 
-export function genSearchContinuation (query: string, offset: number, _options: any): string {
+export function genSearchContinuation (query: string, offset: number): string {
     const sCont = new SearchContinuation()
     // eslint-disable-next-line new-cap
     const sData = new SearchContinuation.search_data()
