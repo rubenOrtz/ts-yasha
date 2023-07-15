@@ -1,15 +1,18 @@
 {
-	"main": "index.js",
+	"main": "lib/src/index.js",
 	"name": "yasha",
-	"version": "2.1.3",
+	"version": "3.0.0",
 	"types": "types",
+	"type": "module",
+	"description": "A fork of yasha module rewritten in TypeScript",
 	"dependencies": {
 		"@discordjs/voice": "github:davidzeng0/voice#dist",
-		"discord.js": "^14.7.1",
-		"google-protobuf": "^3.19.2",
-		"node-fetch": "^2.6.6",
+		"@typescript-eslint/parser": "^5.62.0",
+		"discord.js": "14.11.0",
+		"eslint": "^8.45.0",
+		"google-protobuf": "3.21.2",
 		"sange": "github:davidzeng0/sange",
-		"sodium": "^3.0.2"
+		"sodium": "3.0.2"
 	},
 	"scripts": {
 		"proto": "mkdir -p proto/build; protoc --proto_path=proto --js_out=import_style=commonjs,binary:proto/build youtube.proto",
@@ -18,7 +21,16 @@
 		"type": "tsc || rm -r tmp"
 	},
 	"devDependencies": {
-		"@types/node-fetch": "^2.6.4",
-		"typescript": "5.1.3"
+		"ts-standard": "^12.0.2",
+		"typescript": "^5.1.6"
+	},
+	"eslintConfig": {
+		"extends": "./node_modules/ts-standard/eslintrc.json",
+		"parserOptions": {
+			"project": "./tsconfig.json"
+		},
+		"rules": {
+			"@typescript-eslint/indent": ["error", 4]
+		}
 	}
 }

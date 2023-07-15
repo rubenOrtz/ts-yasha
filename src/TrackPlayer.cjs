@@ -1,12 +1,12 @@
 const EventEmitter = require('events');
 
-const VoiceConnection = require('./VoiceConnection');
+const VoiceConnection = require('./VoiceConnection.cjs');
 // @ts-ignore
 const AudioPlayer = require('sange');
 
 		// @ts-ignore
 const sodium = require('sodium');
-const { TrackStream, TrackStreams } = require('./Track');
+const { TrackStream, TrackStreams } = require('./Track.cjs');
 
 const random_bytes = Buffer.alloc(24);
 const connection_nonce = Buffer.alloc(24);
@@ -56,7 +56,7 @@ class TrackPlayer extends EventEmitter{
 	external_packet_send = false
 	/** @type {number} */
 	last_error = 0
-	/** @type {Awaited<ReturnType<typeof import('./Source').resolve>> | null} */
+	/** @type {Awaited<ReturnType<typeof import('./Source.cjs').resolve>> | null} */
 	track
 	/** @type {unknown} */
 	stream
@@ -573,7 +573,7 @@ class TrackPlayer extends EventEmitter{
 
 	/**
 	 * 
-	 * @param {import('./Track').Track<any>} track 
+	 * @param {import('./Track.cjs').Track<any>} track 
 	 * @returns {void}
 	 */
 	play(track){

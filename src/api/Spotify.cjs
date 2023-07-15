@@ -1,8 +1,8 @@
-const Request = require('../Request')
-const SourceError = require('../SourceError')
-const Youtube = require('./Youtube')
+const Request = require('../Request.cjs')
+const SourceError = require('../SourceError.js')
+const Youtube = require('./Youtube.cjs')
 
-const { Track, TrackImage, TrackResults, TrackPlaylist } = require('../Track')
+const { Track, TrackImage, TrackResults, TrackPlaylist } = require('../Track.cjs')
 
 /**
  * @extends {Track<'Spotify'>}
@@ -172,7 +172,7 @@ const api = new (class SpotifyAPI {
     /**
      * 
      * @param {string} path 
-     * @param {import('node-fetch').RequestInit} [options] 
+     * @param {RequestInit} [options] 
      * @returns {Promise<{[key: string]: any}>}
      */
     async api_request(path, options = {}) {
@@ -186,6 +186,7 @@ const api = new (class SpotifyAPI {
             // ? is authorization or Authorization
             // @ts-ignore
             options.headers.authorization = 'Bearer ' + this.token
+            // @ts-ignore
             res = (await Request.getResponse('https://api.spotify.com/v1/' + path, options)).res
 
             if (res.status == 401) {

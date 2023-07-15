@@ -1,4 +1,3 @@
-build
 node_modules
-package-lock.json
-tmp
+lib
+proto/**/*.js

@@ -1,8 +1,8 @@
-const Request = require('../Request')
-const SourceError = require('../SourceError')
-const util = require('./util')
+const Request = require('../Request.cjs')
+const SourceError = require('../SourceError.js')
+const util = require('./util.cjs')
 
-const { Track, TrackImage, TrackResults, TrackPlaylist, TrackStream, TrackStreams } = require('../Track')
+const { Track, TrackImage, TrackResults, TrackPlaylist, TrackStream, TrackStreams } = require('../Track.cjs')
 
 /** @extends {Track<'Soundcloud'>} */
 class SoundcloudTrack extends Track {
@@ -277,7 +277,6 @@ var api = new (class SoundcloudAPI {
     Playlist = SoundcloudPlaylist
 
     /**
-     * @private
      * @type {string | null}
      */
     client_id
@@ -352,6 +351,7 @@ var api = new (class SoundcloudAPI {
             queries = []
 
             for (var name in query) queries.push(name + '=' + query[name])
+            // @ts-ignore
             res = (await Request.getResponse(path + '?' + queries.join('&'))).res
 
             if (res.status == 401) {
@@ -390,7 +390,6 @@ var api = new (class SoundcloudAPI {
      * @param {string} path
      * @param {{[key:string]:any}} [query]
      * @returns {Promise<any>}
-     * @private
      */
     async api_request(path, query) {
         return await this.request('https://api-v2.soundcloud.com/' + path, query)
@@ -401,7 +400,6 @@ var api = new (class SoundcloudAPI {
      * @param {number} offset
      * @param {number} limit
      * @returns {Promise<SoundcloudPlaylist|null>}
-     * @private
      */
     async resolve_playlist(list, offset = 0, limit) {
         var unresolved_index = -1
@@ -477,6 +475,7 @@ var api = new (class SoundcloudAPI {
         url = 'https://on.soundcloud.com/' + encodeURIComponent(id)
 
         for (var redirects = 0; redirects < 5; redirects++) {
+            // @ts-ignore
             res = (await Request.getResponse(url, { redirect: 'manual' })).res
 
             try {
@@ -513,7 +512,6 @@ var api = new (class SoundcloudAPI {
 
     /**
      * @param {string} id
-     * @private
      * @returns {void}
      */
     check_valid_id(id) {

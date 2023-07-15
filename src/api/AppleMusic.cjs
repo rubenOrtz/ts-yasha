@@ -1,8 +1,8 @@
-const Request = require('../Request')
-const SourceError = require('../SourceError')
-const Youtube = require('./Youtube')
+const Request = require('../Request.cjs')
+const SourceError = require('../SourceError.js')
+const Youtube = require('./Youtube.cjs')
 
-const { Track, TrackImage, TrackResults, TrackPlaylist } = require('../Track')
+const { Track, TrackImage, TrackResults, TrackPlaylist } = require('../Track.cjs')
 
 /** @extends {Track<'AppleMusic'>} */
 class AppleMusicTrack extends Track {
@@ -260,6 +260,7 @@ const api = new (class AppleMusicAPI {
             options.headers.origin = 'https://music.apple.com'
             res = (
                 await Request.getResponse(`https://amp-api.music.apple.com/v1/catalog/us/${path}${queries}`, options)
+                // @ts-ignore
             ).res
 
             if (res.status == 401) {

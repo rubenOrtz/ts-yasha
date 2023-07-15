@@ -1,8 +1,8 @@
 // @ts-check
-const { Track, TrackStream, TrackStreams, TrackPlaylist } = require('../Track')
-const SourceError = require('../SourceError')
+const { Track, TrackStream, TrackStreams, TrackPlaylist } = require('../Track.cjs')
+const SourceError = require('../SourceError.js')
 // ! This is an a modification of the original File.js file from the project.
-const Source = require('../Source')
+const Source = require('../Source.cjs')
 
 class FileStream extends TrackStream {
     /**
