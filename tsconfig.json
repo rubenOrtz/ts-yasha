@@ -6,7 +6,7 @@
         "rootDir": "./src",
         "paths": {
             "@/*": ["/src/*"],
-            "@proto": ["/proto/*"],
+            "@proto": ["/src/proto/*"],
         },
         "allowJs": true,
         "checkJs": true,

@@ -3,7 +3,7 @@ const Request = require('../Request.cjs')
 const SourceError = require('../SourceError.js')
 
 const { Track, TrackImage, TrackResults, TrackPlaylist, TrackStream, TrackStreams } = require('../Track.cjs')
-const { gen_playlist_continuation, gen_search_options, playlist_next_offset } = require('../../proto/youtube.js')
+const { gen_playlist_continuation, gen_search_options, playlist_next_offset } = require('../proto/youtube.js')
 
 /**
  *
@@ -37,7 +37,7 @@ function text (txt) {
 function check_playable (st) {
   if (!st) return
   // @ts-ignore
-  let { status, reason } = st
+  const { status, reason } = st
 
   if (!status) return
   switch (status.toLowerCase()) {
@@ -82,9 +82,9 @@ function number (n) {
  * @returns
  */
 function parse_timestamp (str) {
-  let tokens = str.split(':').map((token) => parseInt(token))
+  const tokens = str.split(':').map((token) => parseInt(token))
 
-  let scale = [1, 60, 3600, 86400]
+  const scale = [1, 60, 3600, 86400]
   let seconds = 0
 
   if (tokens.length > scale.length) return -1
@@ -290,7 +290,7 @@ class YoutubeStreams extends TrackStreams {
     let loudness = 0
 
     if (playerResponse.playerConfig?.audioConfig?.loudnessDb) { loudness = playerResponse.playerConfig.audioConfig.loudnessDb }
-    let { formats, adaptiveFormats, expiresInSeconds } = playerResponse.streamingData
+    const { formats, adaptiveFormats, expiresInSeconds } = playerResponse.streamingData
 
     if (!this.live && formats) this.extract_streams(formats, false)
     if (adaptiveFormats) this.extract_streams(adaptiveFormats, true)
@@ -313,11 +313,11 @@ class YoutubeStreams extends TrackStreams {
   extract_streams (streams, adaptive) {
     for (const fmt of streams) {
       if (fmt.type == 'FORMAT_STREAM_TYPE_OTF') continue
-      let stream = new YoutubeStream(fmt.url, fmt.itag)
+      const stream = new YoutubeStream(fmt.url, fmt.itag)
 
       if (this.live && adaptive) stream.setDuration(fmt.targetDurationSec)
       else stream.setDuration(parseInt(fmt.approxDurationMs, 10) / 1000)
-      let mime = /(video|audio)\/([a-zA-Z0-9]{3,4});(?:\+| )codecs="(.*?)"/.exec(fmt.mimeType)
+      const mime = /(video|audio)\/([a-zA-Z0-9]{3,4});(?:\+| )codecs="(.*?)"/.exec(fmt.mimeType)
 
       if (!mime) continue
       if (!adaptive) stream.setTracks(true, true)
@@ -367,7 +367,7 @@ const api = new (class YoutubeAPI {
     /* youtube v1 api */
     let time = Date.now()
     /** @type {{[key:string]:any}} */
-    let options = { headers: {} }
+    const options = { headers: {} }
 
     body.context = { client: { ...this.innertube_client } }
     options.method = 'POST'
@@ -398,10 +398,10 @@ const api = new (class YoutubeAPI {
     options.body = JSON.stringify(body)
 
     // @ts-ignore
-    let { res } = await Request.getResponse(
+    const { res } = await Request.getResponse(
             `https://${origin}.youtube.com/youtubei/v1/${path}?key=${this.innertube_key}${query}&prettyPrint=false`,
             options
-        )
+    )
     // @ts-ignore
     var body
 
@@ -434,7 +434,7 @@ const api = new (class YoutubeAPI {
      * @returns {Promise<YoutubeTrack>}
      */
   async get (id) {
-    let start = Date.now()
+    const start = Date.now()
     let responses = [this.api_request('next', { videoId: id }), this.api_request('player', { videoId: id })]
 
     try {
@@ -446,22 +446,22 @@ const api = new (class YoutubeAPI {
       throw e
     }
 
-    let response = responses[0]
-    let player_response = responses[1]
+    const response = responses[0]
+    const player_response = responses[1]
 
     if (!response || !player_response) throw new SourceError.INTERNAL_ERROR(null, new Error('Missing data'))
     // @ts-ignore
     check_playable(player_response.playabilityStatus)
 
     // @ts-ignore
-    let video_details = player_response.videoDetails
+    const video_details = player_response.videoDetails
 
     try {
-      let author = get_property(
-        // @ts-ignore
-        response.contents.twoColumnWatchNextResults.results.results.contents,
-        'videoSecondaryInfoRenderer'
-            ).owner.videoOwnerRenderer
+      const author = get_property(
+                // @ts-ignore
+                response.contents.twoColumnWatchNextResults.results.results.contents,
+                'videoSecondaryInfoRenderer'
+      ).owner.videoOwnerRenderer
 
       return new YoutubeTrack().from(video_details, author, new YoutubeStreams().from(start, player_response))
     } catch (e) {
@@ -475,8 +475,8 @@ const api = new (class YoutubeAPI {
      * @returns {Promise<YoutubeStreams>}
      */
   async get_streams (id) {
-    let start = Date.now()
-    let player_response = await this.api_request('player', { videoId: id })
+    const start = Date.now()
+    const player_response = await this.api_request('player', { videoId: id })
 
     if (!player_response) throw new SourceError.INTERNAL_ERROR(null, new Error('Missing data'))
     // @ts-ignore
@@ -496,13 +496,13 @@ const api = new (class YoutubeAPI {
      * @returns {Promise<YoutubePlaylist>}
      */
   async playlist_once (id, start = 0) {
-    let results = new YoutubePlaylist()
-    let data = await this.api_request('browse', { continuation: gen_playlist_continuation(id, start) })
+    const results = new YoutubePlaylist()
+    const data = await this.api_request('browse', { continuation: gen_playlist_continuation(id, start) })
 
     if (!data.sidebar) throw new SourceError.NOT_FOUND('Playlist not found')
     if (!data.onResponseReceivedActions) return results
     try {
-      let details = get_property(data.sidebar.playlistSidebarRenderer.items, 'playlistSidebarPrimaryInfoRenderer')
+      const details = get_property(data.sidebar.playlistSidebarRenderer.items, 'playlistSidebarPrimaryInfoRenderer')
 
       results.setMetadata(text(details.title), text(details.description))
       results.process(
@@ -528,7 +528,7 @@ const api = new (class YoutubeAPI {
     let offset = 0
 
     do {
-      let result = await this.playlist_once(id, offset)
+      const result = await this.playlist_once(id, offset)
 
       if (!list) list = result
       else list = list.concat(result)
@@ -566,7 +566,7 @@ const api = new (class YoutubeAPI {
       }
     }
 
-    let results = new YoutubeResults()
+    const results = new YoutubeResults()
 
     try {
       // @ts-ignore
@@ -591,7 +591,7 @@ const api = new (class YoutubeAPI {
       return
     }
 
-    let cookies = cookiestr.split(';')
+    const cookies = cookiestr.split(';')
     let sapisid = null
 
     for (let cookie of cookies) {
@@ -619,17 +619,17 @@ const api = new (class YoutubeAPI {
      */
   string_word_match (big, small) {
     // @ts-ignore
-    let boundary = (c) => /[\s\W]/g.test(c)
+    const boundary = (c) => /[\s\W]/g.test(c)
 
     big = big.toLowerCase()
     small = small.toLowerCase()
 
     if (!big.length || !small.length || boundary(small[0])) return 0
     let l = 0
-        var r = small.length
+        let r = small.length
 
     while (l < r) {
-      let mid = (r + l + 1) >> 1
+      const mid = (r + l + 1) >> 1
 
       if (big.includes(small.substring(0, mid))) l = mid
       else r = mid - 1
@@ -650,13 +650,13 @@ const api = new (class YoutubeAPI {
     let score = 0
 
     if (track.duration != -1 && result.duration != -1) {
-      let diff = Math.abs(Math.round(track.duration) - Math.round(result.duration))
+      const diff = Math.abs(Math.round(track.duration) - Math.round(result.duration))
 
       if (diff > 5) return 0
       score += 5 - diff
     }
 
-    let length = Math.max(track.artists.length, result.artists ? result.artists.length : 1)
+    const length = Math.max(track.artists.length, result.artists ? result.artists.length : 1)
 
     for (let artist of track.artists) {
       artist = artist.toLowerCase()
@@ -712,8 +712,8 @@ const api = new (class YoutubeAPI {
      * @returns {any}
      */
   track_match_best_result (results, track) {
-    let list = []
-        var result
+    const list = []
+        let result
 
     if (results.top_result) list.push(results.top_result)
     if (results.songs) list.push(...results.songs)
@@ -729,10 +729,10 @@ const api = new (class YoutubeAPI {
      * @returns
      */
   async track_match_lookup (track) {
-    let title = [...track.artists, track.title].join(' ')
+    const title = [...track.artists, track.title].join(' ')
     // @ts-ignore
     let results = await music.search(title)
-    let expmatch = results.filter((t) => t.explicit == track.explicit)
+    const expmatch = results.filter((t) => t.explicit == track.explicit)
 
     if (results.top_result && results.top_result.explicit == track.explicit)
     // @ts-ignore
@@ -768,7 +768,7 @@ const api = new (class YoutubeAPI {
     let result = await this.track_match_lookup(track)
 
     if (result) {
-      let id = result.id
+      const id = result.id
 
       result = await result.getStreams()
       track.youtube_id = id
@@ -799,12 +799,12 @@ class YoutubeMusicTrack extends YoutubeTrack {
   // ! this code is a modification
   parse_metadata (has_type, metadata = []) {
     let type
-        var artists = []
-        var duration
+        const artists = []
+        let duration
     let found = has_type ? 0 : 1
 
     for (let i = 0; i < metadata.length; i++) {
-      let text = metadata[i].text
+      const text = metadata[i].text
 
       if (text == ' • ') {
         found++
@@ -937,7 +937,7 @@ class YoutubeMusicResults extends TrackResults {
      * @returns
      */
   from_section (list) {
-    let tracks = []
+    const tracks = []
 
     for (let video of list) {
       if (video.musicResponsiveListItemRenderer) {
@@ -1062,7 +1062,7 @@ var music = new (class YoutubeMusic {
       if (params) body = get_property(body, 'musicShelfRenderer')
     }
 
-    let results = new YoutubeMusicResults()
+    const results = new YoutubeMusicResults()
 
     try {
       results.process(body)
