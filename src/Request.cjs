@@ -11,92 +11,91 @@ const httpsAgent = new (require('https').Agent)({ keepAlive: true })
  * @returns {Promise<Response>}
  */
 async function fetch (url, opts = {}) {
-  opts.agent = httpsAgent
+    opts.agent = httpsAgent
 
-  // @ts-ignore
-  return nfetch(url, opts)
+    return globalThis.fetch(url, opts)
 }
 
 module.exports = new class {
-  /**
+    /**
 	 *
 	 * @param {string} url
 	 * @param {RequestInit} [options]
 	 * @returns {Promise<Response}>}
 	 */
-  async getResponse (url, options) {
-    let res
+    async getResponse (url, options) {
+        let res
 
-    try {
-      res = await fetch(url, options)
-    } catch (e) {
-      throw new SourceError.NETWORK_ERROR(null, e)
+        try {
+            res = await fetch(url, options)
+        } catch (e) {
+            throw new SourceError.NETWORK_ERROR(null, e)
+        }
+
+        return { res }
     }
 
-    return { res }
-  }
-
-  /**
+    /**
 	 *
 	 * @param {string} url
 	 * @param {import('node-fetch').RequestInit} [options]
 	 * @returns {Promise<{res: import('node-fetch').Response, body: string}>}
 	 */
-  async get (url, options) {
-    const { res } = await this.getResponse(url, options)
+    async get (url, options) {
+        const { res } = await this.getResponse(url, options)
 
-    let body
+        let body
 
-    try {
-      body = await res.text()
-    } catch (e) {
-      if (!res.ok) { throw new SourceError.INTERNAL_ERROR(null, e) }
-      throw new SourceError.NETWORK_ERROR(null, e)
+        try {
+            body = await res.text()
+        } catch (e) {
+            if (!res.ok) { throw new SourceError.INTERNAL_ERROR(null, e) }
+            throw new SourceError.NETWORK_ERROR(null, e)
+        }
+
+        if (!res.ok) { throw new SourceError.INTERNAL_ERROR(null, new Error(body)) }
+        return { res, body }
     }
 
-    if (!res.ok) { throw new SourceError.INTERNAL_ERROR(null, new Error(body)) }
-    return { res, body }
-  }
-
-  /**
+    /**
 	 *
 	 * @param {string} url
 	 * @param {import('node-fetch').RequestInit} [options]
 	 * @returns {Promise<{res: import('node-fetch').Response; body: {[key: string]:string}}>}
 	 */
-  async getJSON (url, options) {
-    const data = await this.get(url, options)
+    async getJSON (url, options) {
+        const data = await this.get(url, options)
 
-    try {
-      data.body = JSON.parse(data.body)
-    } catch (e) {
-      throw new SourceError.INVALID_RESPONSE(null, e)
+        try {
+            data.body = JSON.parse(data.body)
+        } catch (e) {
+            throw new SourceError.INVALID_RESPONSE(null, e)
+        }
+
+        // @ts-ignore
+        return data
     }
 
-    // @ts-ignore
-    return data
-  }
-
-  /**
+    /**
 	 *
 	 * @param {string} url
 	 * @param {import('node-fetch').RequestInit} [options]
 	 * @returns {Promise<{res: import('node-fetch').Response; body: Buffer}>}
 	 */
-  async getBuffer (url, options) {
+    async getBuffer (url, options) {
     // @ts-ignore
-    const { res } = await this.getResponse(url, options)
+        const { res } = await this.getResponse(url, options)
 
-    let body
+        let body
 
-    try {
-      body = await res.buffer()
-    } catch (e) {
-      if (!res.ok) { throw new SourceError.INTERNAL_ERROR(null, e) }
-      throw new SourceError.NETWORK_ERROR(null, e)
+        try {
+            body = await res.buffer()
+        } catch (e) {
+            if (!res.ok) { throw new SourceError.INTERNAL_ERROR(null, e) }
+            throw new SourceError.NETWORK_ERROR(null, e)
+        }
+
+        if (!res.ok) { throw new SourceError.INTERNAL_ERROR(null, new Error(body.toString('utf8'))) }
+        return { res, body }
     }
-
-    if (!res.ok) { throw new SourceError.INTERNAL_ERROR(null, new Error(body.toString('utf8'))) }
-    return { res, body }
-  }
 }()

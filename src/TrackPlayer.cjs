@@ -56,7 +56,7 @@ class TrackPlayer extends EventEmitter{
 	external_packet_send = false
 	/** @type {number} */
 	last_error = 0
-	/** @type {Awaited<ReturnType<typeof import('./Source.cjs').resolve>> | null} */
+	/** @type {Awaited<ReturnType<typeof import('./Source.js').resolve>> | null} */
 	track
 	/** @type {unknown} */
 	stream

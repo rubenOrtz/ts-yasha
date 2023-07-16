@@ -1,6 +1,6 @@
 const Request = require('../Request.cjs')
 const SourceError = require('../SourceError.js')
-const Youtube = require('./Youtube.cjs')
+const Youtube = require('./Youtube.js')
 
 const { Track, TrackImage, TrackResults, TrackPlaylist } = require('../Track.cjs')
 

@@ -83,7 +83,7 @@ export class Track<T extends string> {
     title
     id
     streams: TrackStreams = new TrackStreams()
-    thumbnails: unknown
+    thumbnails: TrackImage[] = []
 
     constructor (platform: T, id: string, title: string, author: string, icons?: TrackImage[]) {
         this.platform = platform
@@ -93,11 +93,9 @@ export class Track<T extends string> {
         this.icons = icons ?? []
     }
 
-    setMetadata (id: string, title: string, duration: number, thumbnails: unknown): this {
-        this.id = id
-        this.title = title
-        this.duration = duration
-        this.thumbnails = thumbnails
+    setMetadata (duration?: number, thumbnails?: TrackImage[]): this {
+        this.duration = duration ?? this.duration
+        this.thumbnails.concat(thumbnails ?? [])
 
         return this
     }
@@ -112,18 +110,6 @@ export class Track<T extends string> {
         this.playable = playable
 
         return this
-    }
-
-    async fetch (): Promise<null> {
-        return null
-    }
-
-    async getStreams (): Promise<null> {
-        return null
-    }
-
-    get url (): null {
-        return null
     }
 
     equals (other: Track<any>): boolean {
@@ -174,10 +160,6 @@ export class TrackPlaylist<T extends string> extends TrackResults<T> {
 
         return this
     }
-
-    get url (): null {
-        return null
-    }
 }
 
 export class TrackImage {
@@ -191,9 +173,11 @@ export class TrackImage {
         this.height = height ?? 0
     }
 
-    static from (array: Array<{ url: string, width: number, height: number }>): TrackImage[] {
+    static from (array: ImageDetails[]): TrackImage[] {
         const newArray = []
         for (const ti of array) newArray.push(new TrackImage(ti.url, ti.width, ti.height))
         return array
     }
 }
+
+export interface ImageDetails { url: string, width: number, height: number }

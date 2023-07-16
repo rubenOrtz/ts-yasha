@@ -1,9 +1,9 @@
-import Source from './Source.cjs'
+import Source from './Source.js'
 import Track from './Track.js'
 import TrackPlayer from './TrackPlayer.cjs'
 import VoiceConnection from './VoiceConnection.cjs'
 
-import Youtube from './api/Youtube.cjs'
+import Youtube from './api/Youtube.js'
 import Soundcloud from './api/Soundcloud.cjs'
 import Spotify from './api/Spotify.cjs'
 

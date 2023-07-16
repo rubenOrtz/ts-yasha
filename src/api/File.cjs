@@ -2,7 +2,7 @@
 const { Track, TrackStream, TrackStreams, TrackPlaylist } = require('../Track.cjs')
 const SourceError = require('../SourceError.js')
 // ! This is an a modification of the original File.js file from the project.
-const Source = require('../Source.cjs')
+const Source = require('../Source.js')
 
 class FileStream extends TrackStream {
     /**
