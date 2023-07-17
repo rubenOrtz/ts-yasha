@@ -1,5 +1,5 @@
 export class TrackStream {
-    #url
+    url
     video
     audio
     bitrate
@@ -8,7 +8,7 @@ export class TrackStream {
     codecs: unknown
 
     constructor (url: string) {
-        this.#url = url
+        this.url = url
         this.video = false
         this.audio = false
         this.bitrate = -1
@@ -47,8 +47,8 @@ export class TrackStream {
         return this === other || (this.url === other.url && this.video === other.video && this.audio === other.audio)
     }
 
-    get url (): string {
-        return this.#url
+    async getUrl (): Promise<unknown> {
+        return null
     }
 }
 
@@ -57,12 +57,10 @@ export class TrackStreams extends Array<TrackStream> {
     live = false
     time = 0
 
-    constructor ({ volume, live, time }: { volume?: number, live?: boolean, time?: number } = {}) {
-        super()
-
-        this.volume = volume ?? 100
-        this.live = live ?? false
-        this.time = time ?? 0
+    set (volume: number, live: boolean, time: number): void {
+        this.volume = volume
+        this.live = live
+        this.time = time
     }
 
     expired (): boolean {
@@ -75,33 +73,38 @@ export class TrackStreams extends Array<TrackStream> {
 }
 
 export class Track<T extends string> {
-    icons: TrackImage[]
+    icons?: TrackImage[]
     playable = true
     duration = -1
     platform: T
-    author
-    title
-    id
-    streams: TrackStreams = new TrackStreams()
+    author?: string
+    title?: string
+    id?: string
+    streams?: TrackStreams
     thumbnails: TrackImage[] = []
 
-    constructor (platform: T, id: string, title: string, author: string, icons?: TrackImage[]) {
+    constructor (platform: T) {
         this.platform = platform
-        this.id = id
-        this.author = author
-        this.title = title
-        this.icons = icons ?? []
     }
 
-    setMetadata (duration?: number, thumbnails?: TrackImage[]): this {
-        this.duration = duration ?? this.duration
-        this.thumbnails.concat(thumbnails ?? [])
+    setOwner (name: string, icons: TrackImage[]): this {
+        this.author = name
+        this.icons = icons
 
         return this
     }
 
-    setStreams (streams: TrackStream[]): this {
-        this.streams.concat(streams)
+    setMetadata (id: string, title: string, duration: number, thumbnails: TrackImage[]): this {
+        this.id = id
+        this.title = title
+        this.duration = duration
+        this.thumbnails = thumbnails
+
+        return this
+    }
+
+    setStreams (streams: TrackStreams): this {
+        this.streams = streams
 
         return this
     }
@@ -112,13 +115,27 @@ export class Track<T extends string> {
         return this
     }
 
+    async fetch (): Promise<unknown> {
+        return null
+    }
+
+    async getStreams (): Promise<unknown> {
+        return null
+    }
+
+    get url (): unknown {
+        return null
+    }
+
     equals (other: Track<any>): boolean {
         return this === other || (this.platform === other.platform && this.id != null && this.id === other.id)
     }
 }
 
 export class TrackResults<T extends string> extends Array<Track<T>> {
-
+    async next (): Promise<unknown> {
+        return null
+    }
 }
 
 export class TrackPlaylist<T extends string> extends TrackResults<T> {
@@ -160,6 +177,10 @@ export class TrackPlaylist<T extends string> extends TrackResults<T> {
 
         return this
     }
+
+    get url (): unknown {
+        return null
+    }
 }
 
 export class TrackImage {
@@ -173,8 +194,9 @@ export class TrackImage {
         this.height = height ?? 0
     }
 
-    static from (array: ImageDetails[]): TrackImage[] {
-        const newArray = []
+    static from (array: ImageDetails[]): ImageDetails[] {
+        const newArray: ImageDetails[] = []
+        if (!array) return newArray
         for (const ti of array) newArray.push(new TrackImage(ti.url, ti.width, ti.height))
         return array
     }
