@@ -473,7 +473,7 @@ class TrackPlayer extends EventEmitter{
 		if(!await this.load_streams() || !this.player) /* destroy could have been called while waiting */
 			return;
 		if(this.normalize_volume)
-			this.player.setVolume(this.stream.volume);
+			this.player.setVolume(this.stream.volume??0.1);
 		try{
 			this.player.setURL(this.stream.url, this.stream.is_file);
 			this.player.start();
